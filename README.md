@@ -15,7 +15,7 @@ Tweet me if you have questions: @Digressive
 
 
 
-Features and Requirements
+##Features and Requirements
 
 -The script is designed to be run on a Hyper-V host.
 
@@ -30,30 +30,31 @@ Features and Requirements
 -The script has been tested on Windows 10, Windows Server 2016 (Datacenter and Core installations) and Windows Server 2012 R2 (Datacenter and Core Installations) with PowerShell 5.0.
 
 
-Should You Use The -NoPerms Switch?
+##Should You Use The -NoPerms Switch?
 
 The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host can not be given the required permissions to run a regular export operation. If you are unsure, you should do a test run of the script without the -NoPerms switch first and see if you run into problems.
 
 
-Why Is The -NoPerms Switch Needed?
+##Why Is The -NoPerms Switch Needed?
 
 Hyper-V’s export operation requires that the computer account in Active Directory have access to the location where the exports are being saved. I recommend creating an Active Directory group for the Hyper-V hosts and then giving the group the required ‘Full Control’ file and share permissions. When a NAS such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. Unfortunately to copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed, so the VM will be shutdown for the duration of the copy process when the -NoPerms switch is used.
 
 
-Generating A Password File
+##Generating A Password File
 
 The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell, on the computer that is going to run the script and logged in with the user that will be running the script. When you run the command you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
 
 Please note: This is only required if you need to authenticate to the SMTP server when send the log via e-mail.
 
+```
 $creds = Get-Credential
 $creds.Password | ConvertFrom-SecureString | Set-Content c:\scripts\ps-script-pwd.txt
+```
 
 After running the commands, you will have a text file containing the encrypted password. When configuring the -Pwd switch enter the path and file name of this file.
 
 
-
-Configuration
+##Configuration
 
 Here’s a list of all the command line switches and example configurations.
 
@@ -94,7 +95,8 @@ The txt file containing the encrypted password for the user account.
 Configures the script to connect to the SMTP server using SSL.
 
 Example:
+```
 Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List E:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L E:\scripts -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+```
 
 This will shutdown all the VMs listed in the file located in E:\scripts\vms.txt, and back up their files to \\nas\vms. Each VM will have their own folder. A zip file for each VM folder will be created, and the folder will be deleted. Any backups older than 30 days will also be deleted. The log file will be output to E:\scripts and sent via email.
-
