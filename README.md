@@ -3,10 +3,9 @@ PowerShell script to backup Hyper-V VMs
 
 My Hyper-V Backup Utility PowerShell script can also be downloaded from:
 
-[The Microsoft TechNet Gallery](https://gallery.technet.microsoft.com/PowerShell-Hyper-V-Backup-7d444752)
-[The PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
-
-For full instructions and documentation, [visit my blog post](https://gal.vin/2017/09/18/vm-backup-for-hyper-v)
+* [The Microsoft TechNet Gallery](https://gallery.technet.microsoft.com/PowerShell-Hyper-V-Backup-7d444752)
+* [The PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
+* For full instructions and documentation, [visit my blog post](https://gal.vin/2017/09/18/vm-backup-for-hyper-v)
 
 -Mike
 
@@ -19,7 +18,7 @@ Tweet me if you have questions: [@Digressive](https://twitter.com/digressive)
 * The script can be used to backup VMs to a device which the Hyper-V host does not have the access to run a regular export.
 * The script can be used to backup VMs in a Hyper-V cluster.
 * The script requires at least PowerShell 5.0
-* The script has been tested on Windows 10, Windows Server 2016 (Datacenter and Core installations) and Windows Server 2012 R2 (Datacenter and Core Installations) with PowerShell 5.0.
+The script has been tested on Windows 10, Windows Server 2016 (Datacenter and Core installations) and Windows Server 2012 R2 (Datacenter and Core Installations) with PowerShell 5.0.
 
 ### Should You Use The -NoPerms Switch?
 
@@ -57,32 +56,41 @@ Enter the path to a txt file with a list of Hyper-V VM names to backup. If this 
 -L
 ```
 The path to output the log file to. The file name will be Hyper-V-Backup-YYYY-MM-dd-HH-mm-ss.log
-
+```
 -NoPerms
+```
 Instructs the script to shutdown the running VM(s) to do the file-copy based backup, instead of using the Hyper-V export function. When multiple VMs are running, the first VM (alphabetically) will be shutdown, backed up, and then started, then the next and so on.
-
+```
 -Keep
+```
 Instructs the script to keep a specified number of days worth of backups. The script will delete VM backups older than the number of days specified.
-
+```
 -Compress
+```
 This option will create a .zip file of each Hyper-V VM backup. Available disk space should be considered when using this option.
-
+```
 -SendTo
+```
 The e-mail address the log should be sent to.
-
+```
 -From
+```
 The e-mail address the log should be sent from.
-
+```
 -Smtp
+```
 The DNS name or IP address of the SMTP server.
-
+```
 -User
+```
 The user account to connect to the SMTP server.
-
+```
 -Pwd
+```
 The txt file containing the encrypted password for the user account.
-
+```
 -UseSsl
+```
 Configures the script to connect to the SMTP server using SSL.
 
 Example:
