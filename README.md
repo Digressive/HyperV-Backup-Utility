@@ -14,13 +14,17 @@ Tweet me if you have questions: @Digressive
  
 Features and Requirements
 
-The script is designed to be run on a Hyper-V host.
-The device must also have Hyper-V management tools and PowerShell modules installed.
-The script can be used to backup VMs to a device which the Hyper-V host does not have the access to run a regular export.
-The script can be used to backup VMs in a Hyper-V cluster.
-The script requires at least PowerShell 5.0
+-The script is designed to be run on a Hyper-V host.
 
-The script has been tested on Windows 10, Windows Server 2016 (Datacenter and Core installations) and Windows Server 2012 R2 (Datacenter and Core Installations) with PowerShell 5.0.
+-The device must also have Hyper-V management tools and PowerShell modules installed.
+
+-The script can be used to backup VMs to a device which the Hyper-V host does not have the access to run a regular export.
+
+-The script can be used to backup VMs in a Hyper-V cluster.
+
+-The script requires at least PowerShell 5.0
+
+-The script has been tested on Windows 10, Windows Server 2016 (Datacenter and Core installations) and Windows Server 2012 R2 (Datacenter and Core Installations) with PowerShell 5.0.
 
 
 Should You Use The -NoPerms Switch?
@@ -31,18 +35,27 @@ Below are the operations the script performs with and without the -NoPerms switc
 
 When the -NoPerms switch is enabled:
 
-Gracefully shutdown the first alphabetically named VM.
-Copy all configuration, VHD, and snapshot/checkpoint files to the specified backup location.
-Start the Virtual Machine, and move on to the next VM if applicable.
-Optionally cleanup old backups or keep a configurable number of days worth of backups.
-Optionally create a zip file of the export and remove the original backup folder.
-Optionally create a log file and email it to an address of your choice.
-When the -NoPerms switch is not enabled:
+-Gracefully shutdown the first alphabetically named VM.
 
-Run an export operation of each VM alphabetically, exporting the VMs to the specified backup location. The VMs are kept online.
-Optionally cleanup old backups or keep a configurable number of days worth of backups.
-Optionally create a zip file of the export and remove the original backup folder.
-Optionally create a log file and email it to an address of your choice.
+-Copy all configuration, VHD, and snapshot/checkpoint files to the specified backup location.
+
+-Start the Virtual Machine, and move on to the next VM if applicable.
+
+-Optionally cleanup old backups or keep a configurable number of days worth of backups.
+
+-Optionally create a zip file of the export and remove the original backup folder.
+
+-Optionally create a log file and email it to an address of your choice.
+
+-When the -NoPerms switch is not enabled:
+
+-Run an export operation of each VM alphabetically, exporting the VMs to the specified backup location. The VMs are kept online.
+
+-Optionally cleanup old backups or keep a configurable number of days worth of backups.
+
+-Optionally create a zip file of the export and remove the original backup folder.
+
+-Optionally create a log file and email it to an address of your choice.
  
 
 Why Is The -NoPerms Switch Needed?
