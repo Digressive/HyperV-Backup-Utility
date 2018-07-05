@@ -94,7 +94,8 @@ The txt file containing the encrypted password for the user account.
 ```
 Configures the script to connect to the SMTP server using SSL.
 
-Example:
+### Example
+
 ```
 Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List E:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L E:\scripts -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
 ```
