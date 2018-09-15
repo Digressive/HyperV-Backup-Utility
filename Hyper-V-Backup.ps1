@@ -439,7 +439,15 @@ If ($Vms.count -ne 0)
         }
 
         ## Do a regular export of the VMs.
+        If ($LogPath)
+        {
+            start-transcript -append -path $log
+        }
         $Vms | Export-VM -Path "$Backup"
+        If ($LogPath)
+        {
+            stop-transcript
+        }
 
         ## For logging.
         If ($LogPath)
