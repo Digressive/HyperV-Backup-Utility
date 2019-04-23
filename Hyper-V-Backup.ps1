@@ -339,7 +339,7 @@ If ($Vms.count -ne 0)
             Start-Sleep -S 30
 
             ## If the keep option is not configured.
-            If ($History -eq $Null)
+            If ($Null -eq $History)
             {
                 ## If the compress option is not configured.
                 If ($Compress -eq $False)
@@ -376,7 +376,7 @@ If ($Vms.count -ne 0)
             If ($Compress)
             {
                 ## If the keep option is not configured.
-                If ($History -eq $Null)
+                If ($Null -eq $History)
                 {
                     ## Remove all previous compressed backups.
                     Remove-Item "$Backup\$Vm-*-*-*-*-*-*.zip" -Force
@@ -460,7 +460,7 @@ If ($Vms.count -ne 0)
         ForEach ($Vm in $Vms)
         {
             ## If the keep option is not configured.
-            If ($History -eq $Null)
+            If ($Null -eq $History)
             {
                 ## If the compress option is not configured.
                 If ($Compress -eq $False)
@@ -497,7 +497,7 @@ If ($Vms.count -ne 0)
             If ($Compress)
             {
                 ## If the keep option is not configured.
-                If ($History -eq $Null)
+                If ($Null -eq $History)
                 {
                     ## Remove all previous compressed backups.
                     Remove-Item "$Backup\$Vm-*-*-*-*-*-*.zip" -Force
