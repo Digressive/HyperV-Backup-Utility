@@ -1,4 +1,5 @@
 # HyperV Backup Utility
+
 PowerShell script to backup Hyper-V VMs
 
 My Hyper-V Backup Utility PowerShell script can also be downloaded from:
@@ -9,7 +10,7 @@ My Hyper-V Backup Utility PowerShell script can also be downloaded from:
 
 -Mike
 
-Tweet me if you have questions: [@Digressive](https://twitter.com/digressive)
+Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
 
 ## Features and Requirements
 
