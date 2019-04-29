@@ -154,16 +154,16 @@ If ($LogPath)
     Add-Content -Path $Log -Value ""
 }
 
-## Set variables for computer name and get all running VMs.
+## Set a variable for computer name of the HyperV server.
 $Vs = $Env:ComputerName
 
-## If a VM list file is configured, backup the servers specified in the file.
+## If a VM list file is configured, get the content of the file.
 If ($VmList)
 {
     $Vms = Get-Content $VmList
 }
 
-## If a VM list file is not configured, back up the running VMs.
+## If a VM list file is not configured, just get the running VMs.
 Else
 {
     $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
@@ -172,7 +172,7 @@ Else
 ## Check to see if there are any running VMs.
 If ($Vms.count -ne 0)
 {
-    ## For logging.
+    ## For logging if enabled.
     If ($LogPath)
     {
         Add-Content -Path $Log -Value "$(Get-Date -Format G) This virtual host is: $Vs"
@@ -184,7 +184,7 @@ If ($Vms.count -ne 0)
         }
     }
 
-    ## If the NoPerms switch is set do the following commands.
+    ## Check to see if the NoPerms switch is set.
     If ($NoPerms) 
     {
         ## For each VM do the following.
@@ -199,13 +199,13 @@ If ($Vms.count -ne 0)
                 Remove-Item "$Backup\$Vm" -Recurse -Force
             }
 
-            ## Create directories.
+            ## Create directories for the VM export.
             New-Item "$Backup\$Vm" -ItemType Directory -Force
             New-Item "$Backup\$Vm\Virtual Machines" -ItemType Directory -Force
             New-Item "$Backup\$Vm\VHD" -ItemType Directory -Force
             New-Item "$Backup\$Vm\Snapshots" -ItemType Directory -Force
             
-            ## For logging, test for creation of backup folders, report if they havn't been created.
+            ## For logging, test for creation of backup folders. Log if the have or haven't.
             If ($LogPath)
             {
                 $VmFolderTest = Test-Path "$Backup\$Vm\Virtual Machines"
@@ -251,7 +251,7 @@ If ($Vms.count -ne 0)
                 Add-Content -Path $Log -Value "$(Get-Date -Format G) Stopping VM: $Vm"
             }
 
-            ## Pause the script for 5 seconds.
+            ## Wait for 5 seconds before continuing just to be safe.
             Start-Sleep -S 5
 
             ## Copy the config files and folders.
@@ -273,7 +273,7 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## Copy the VHD.
+            ## Copy the VHD(s).
             Copy-Item $VmInfo.HardDrives.Path -Destination "$Backup\$Vm\VHD\" -Recurse -Force
 
             ## For logging.
@@ -291,7 +291,7 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## Get the VM snapshots/checkpoints, if any.
+            ## Get the VM snapshots/checkpoints.
             $Snaps = Get-VMSnapshot $Vm
 
             ## For each snapshot do the following.
@@ -335,13 +335,13 @@ If ($Vms.count -ne 0)
                 Add-Content -Path $Log -Value "$(Get-Date -Format G) Starting VM: $Vm"
             }
 
-            ## Pause the script for 30 seconds before proceeding.
+            ## Wait for 30 seconds before continuing just to be safe.
             Start-Sleep -S 30
 
-            ## If the keep option is not configured.
+            ## Check to see if the keep command line switch is not configured.
             If ($Null -eq $History)
             {
-                ## If the compress option is not configured.
+                ## Check to see if the compress command line switch is not configured.
                 If ($Compress -eq $False)
                 {
                     ## Remove all previous backup folders.
@@ -355,13 +355,13 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## If the keep option is configured.
+            ## If the keep command line switch is configured...
             Else
             {
-                ## If the compress option is not configured.
+                ## ...and if the compress command line switch is not configured.
                 If ($Compress -eq $False)
                 {
-                    ## Remove all previous backup folder that are older than the configured number of days.
+                    ## Remove all previous backup folders that are older than the configured number of days.
                     Get-ChildItem -Path $Backup -Filter "$Vm-*-*-*-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
 
                     ## For logging.
@@ -372,10 +372,10 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## If the compress option is configured.
+            ## Check to see if the compress command line switch is configured...
             If ($Compress)
             {
-                ## If the keep option is not configured.
+                ## ...and if the keep command line switch is not configured.
                 If ($Null -eq $History)
                 {
                     ## Remove all previous compressed backups.
@@ -388,7 +388,7 @@ If ($Vms.count -ne 0)
                     }
                 }
 
-                ## If the keep option is configured.
+                ## If the keep command line switch is configured.
                 Else
                 {
                     ## Remove previous compressed backups that are older than the configured number of days.
@@ -401,7 +401,7 @@ If ($Vms.count -ne 0)
                     }
                 }
 
-                ## Compress the VM backup into a zip, and delete the VM export folder.
+                ## Compress the VM backup folder into a zip, and delete the VM export folder.
                 Add-Type -AssemblyName "system.io.compression.filesystem"
                 [io.compression.zipfile]::CreateFromDirectory("$Backup\$Vm", "$Backup\$Vm-{0:yyyy-MM-dd-HH-mm-ss}.zip" -f (Get-Date))
                 Get-ChildItem -Path $Backup -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
@@ -413,24 +413,24 @@ If ($Vms.count -ne 0)
                 }
             }
         
-            ## If the compress option is not configured.
+            ## If the compress command line switch is not configured.
             Else
             {
                 ## Rename the export of each VM to include the date.
                 Get-ChildItem -Path $Backup -Filter $Vm -Directory | Rename-Item -NewName ("$Backup\$Vm-{0:yyyy-MM-dd-HH-mm-ss}" -f (Get-Date))
             }
 
-            ## Pause the script for 30 seconds before proceeding.
+            ## Wait for 30 seconds before continuing just to be safe.
             Start-Sleep -S 30
         }
     }
 
-    ## If the NoPerms option is not set.
+    ## If the NoPerms command line option is not set.
     Else
     {
         ForEach ($Vm in $Vms)
         {
-            ## Test for the existence of a previous VM export. If it exists, delete it otherwise the export will fail.
+            ## Test for the existence of a previous VM export. If it exists then delete it, otherwise the export will fail.
             $VmExportBackupTest = Test-Path "$Backup\$Vm"
             If ($VmExportBackupTest -eq $True)
             {
@@ -438,7 +438,7 @@ If ($Vms.count -ne 0)
             }
         }
 
-        ## Do a regular export of the VMs.
+        ## Do a regular Hyper-V export of the VMs.
         $Vms | Export-VM -Path "$Backup"
 
         ## For logging.
@@ -459,10 +459,10 @@ If ($Vms.count -ne 0)
         ## Loop through the VMs do perform operations for the keep and compress options, if configured.
         ForEach ($Vm in $Vms)
         {
-            ## If the keep option is not configured.
+            ## Check to see iif the keep option is not configured...
             If ($Null -eq $History)
             {
-                ## If the compress option is not configured.
+                ## ...and if the compress option is not configured.
                 If ($Compress -eq $False)
                 {
                     ## Remove all previous backup folders.
@@ -476,10 +476,10 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## If the keep option is configured.
+            ## If the keep option is configured...
             Else
             {
-                ## If the compress option is not configured.
+                ## ...and if the compress option is not configured.
                 If ($Compress -eq $False)
                 {
                     ## Remove previous backup folders older than the configured number of days.
@@ -493,10 +493,10 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            ## If the compress option is enabled.
+            ## Check to see if the compress option is enabled...
             If ($Compress)
             {
-                ## If the keep option is not configured.
+                ## ...and if the keep option is not configured.
                 If ($Null -eq $History)
                 {
                     ## Remove all previous compressed backups.
@@ -522,7 +522,7 @@ If ($Vms.count -ne 0)
                     }
                 }
 
-                ## Compress the VM backup into a zip, and delete the VM export folder.
+                ## Compress the VM export folder into a zip, and delete the VM export folder.
                 Add-Type -AssemblyName "system.io.compression.filesystem"
                 [io.compression.zipfile]::CreateFromDirectory("$Backup\$Vm", "$Backup\$Vm-{0:yyyy-MM-dd-HH-mm-ss}.zip" -f (Get-Date))
                 Get-ChildItem -Path $Backup -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
