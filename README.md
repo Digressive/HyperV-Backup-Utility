@@ -98,7 +98,7 @@ Configures the script to connect to the SMTP server using SSL.
 ### Example
 
 ```
-Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List E:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L E:\scripts -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L C:\scripts\logs -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
 ```
 
-This will shutdown all the VMs listed in the file located in E:\scripts\vms.txt, and back up their files to \\nas\vms. Each VM will have their own folder. A zip file for each VM folder will be created, and the folder will be deleted. Any backups older than 30 days will also be deleted. The log file will be output to E:\scripts and sent via email.
+This will shutdown all the VMs listed in the file located in C:\scripts\vms.txt, and back up their files to \\nas\vms. Each VM will have their own folder. A zip file for each VM folder will be created, and the folder will be deleted. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via email.
