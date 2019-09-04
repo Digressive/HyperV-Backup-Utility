@@ -1,12 +1,12 @@
 ﻿<#PSScriptInfo
 
-.VERSION 4.4
+.VERSION 4.5
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
 .AUTHOR Mike Galvin Contact: mike@gal.vin twitter.com/mikegalvin_
 
-.COMPANYNAME
+.COMPANYNAME Mike Galvin
 
 .COPYRIGHT (C) Mike Galvin. All rights reserved.
 
@@ -82,6 +82,9 @@
     .PARAMETER Compress
     This option will create a .zip file of each Hyper-V VM backup. Available disk space should be considered when using this option.
 
+    .PARAMETER Subject
+    The email subject that the email should have. Encapulate with single or double quotes.
+
     .PARAMETER SendTo
     The e-mail address the log should be sent to.
 
@@ -101,9 +104,9 @@
     Configures the script to connect to the SMTP server using SSL.
 
     .EXAMPLE
-    Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L C:\scripts\logs -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+    Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -NoPerms -Keep 30 -Compress -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
     This will shutdown all the VMs listed in the file located in C:\scripts\vms.txt, and back up their files to \\nas\vms. Each VM will have their own folder. A zip file for each VM folder will be created, and the
-    folder will be deleted. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via email.
+    folder will be deleted. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a custom subject line.
 #>
 
 ## Set up command line switches and what variables they map to.
@@ -120,6 +123,8 @@ Param(
     [alias("L")]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $LogPath,
+    [alias("Subject")]
+    $MailSubject,
     [alias("SendTo")]
     $MailTo,
     [alias("From")]
@@ -651,7 +656,12 @@ If ($LogPath)
     ## If email was configured, set the variables for the email subject and body.
     If ($SmtpServer)
     {
-        $MailSubject = "Hyper-V Backup Log"
+        # If no subject is set, use the string below
+        If ($Null -eq $MailSubject)
+        {
+            $MailSubject = "Hyper-V Backup"
+        }
+
         $MailBody = Get-Content -Path $Log | Out-String
 
         ## If an email password was configured, create a variable with the username and password.
