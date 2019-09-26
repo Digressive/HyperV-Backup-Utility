@@ -109,9 +109,11 @@ The DNS name or IP address of the SMTP server.
 
 ``` txt
 -User
+```
 
 ``` txt
 The user account to connect to the SMTP server.
+```
 
 ``` txt
 -Pwd
