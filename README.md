@@ -3,17 +3,19 @@
 Flexible Hyper-V Backup Utility
 
 ``` txt
- _    _                    __      __  ____             _                  _    _ _   _ _ _ _         
-| |  | |                   \ \    / / |  _ \           | |                | |  | | | (_) (_) |        
-| |__| |_   _ _ __   ___ _ _\ \  / /  | |_) | __ _  ___| | ___   _ _ __   | |  | | |_ _| |_| |_ _   _ 
+ _    _                    __      __  ____             _                  _    _ _   _ _ _ _
+| |  | |                   \ \    / / |  _ \           | |                | |  | | | (_) (_) |
+| |__| |_   _ _ __   ___ _ _\ \  / /  | |_) | __ _  ___| | ___   _ _ __   | |  | | |_ _| |_| |_ _   _
 |  __  | | | | '_ \ / _ \ '__\ \/ /   |  _ < / _  |/ __| |/ / | | | '_ \  | |  | | __| | | | __| | | |
 | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |
 |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |
          __/ | |                                                  | |                            __/ |
-        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.02.14 ♥   |___/ 
+        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.02.14 ♥   |___/
 ```
 
 For full instructions and documentation, [visit my site.](https://gal.vin/2017/09/18/vm-backup-for-hyper-v)
+
+A demonstration video is available on [my YouTube channel.](https://youtu.be/q_U40ZZs9ag)
 
 Please consider supporting my work:
 
@@ -32,7 +34,7 @@ Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
 
 * It's designed to be run on a Hyper-V host.
 * The Hyper-V host must have the Hyper-V management PowerShell modules installed.
-* A leading feature is that the utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run an regular export.
+* A leading feature is that the utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export.
 * The utility can be used to backup VMs from Hyper-V hosts in a cluster configuration.
 * The utility requires at least PowerShell 5.0
 
@@ -40,13 +42,13 @@ This utility has been tested on Windows 10, Windows Server 2019, Windows Server 
 
 ### When you should use the -NoPerms switch
 
-The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host can not be given the required permissions to run a regular export to a remote device suce as a NAS device.
+The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host cannot be given the required permissions to run a regular export to a remote device such as a NAS device.
 
-Hyper-V’s export operation requires that the computer account in Active Directory have access to the location where the exports are being stored. I recommend creating an Active Directory group for the Hyper-V hosts and then giving the group the required ‘Full Control’ file and share permissions. When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed, so the VM will be shutdown for the duration of the copy process when the -NoPerms switch is used.
+Hyper-V’s export operation requires that the computer account in Active Directory have access to the location where the exports are being stored. I recommend creating an Active Directory group for the Hyper-V hosts and then giving the group the required ‘Full Control’ file and share permissions. When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed, so the VM will be shut down for the duration of the copy process when the -NoPerms switch is used.
 
 ### Generating A Password File
 
-The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell on the computer and logged in with the user that will be running the utility. When you run the command you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
+The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell on the computer and logged in with the user that will be running the utility. When you run the command, you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
 
 Please note: This is only required if you need to authenticate to the SMTP server when send the log via e-mail.
 
