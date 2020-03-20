@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 20.02.28
+.VERSION 20.03.20
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -18,11 +18,11 @@
 
 .ICONURI
 
-.EXTERNALMODULEDEPENDENCIES Windows Server 2016/Windows 2012 R2 Hyper-V PowerShell Management Modules
+.EXTERNALMODULEDEPENDENCIES
 
 .REQUIREDSCRIPTS
 
-.EXTERNALSCRIPTDEPENDENCIES Hyper-V PowerShell Management Tools
+.EXTERNALSCRIPTDEPENDENCIES
 
 .RELEASENOTES
 
@@ -42,22 +42,15 @@
 
     $creds = Get-Credential
     $creds.Password | ConvertFrom-SecureString | Set-Content c:\foo\ps-script-pwd.txt
-    
-    .PARAMETER BackupTo
 
+    .PARAMETER BackupTo
     The path the virtual machines should be backed up to.
     Each VM will have its own folder inside this location.
     Do not add a trailing backslash.
 
     .PARAMETER List
-
     Enter the path to a txt file with a list of Hyper-V VM names to backup.
     If this option is not configured, all running VMs will be backed up.
-
-    .PARAMETER L
-    The path to output the log file to.
-    The file name will be Hyper-V-Backup_YYYY-MM-dd_HH-mm-ss.log.
-    Do not add a trailing \ backslash.
 
     .PARAMETER Wd
     The path to the working directory to use for the backup before copying it to the final backup directory.
@@ -82,6 +75,11 @@
 
     .PARAMETER NoBanner
     Use this option to hide the ASCII art title in the console.
+
+    .PARAMETER L
+    The path to output the log file to.
+    The file name will be Hyper-V-Backup_YYYY-MM-dd_HH-mm-ss.log.
+    Do not add a trailing \ backslash.
 
     .PARAMETER Subject
     The subject line for the e-mail log. Encapsulate with single or double quotes.
@@ -163,7 +161,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.02.28 ()  |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.03.20     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
