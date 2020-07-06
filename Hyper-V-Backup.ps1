@@ -514,6 +514,15 @@ If ($Vms.count -ne 0)
     ## Display current config ends here.
     ##
 
+    ## Make sure the backup directory exists.
+    $BackupFolderTest = Test-Path $Backup
+
+    If ($BackupFolderTest -eq $False)
+    {
+        Write-Log -Type Info -Event "Backup directory $Backup doesn't exist. Creating it."
+        New-Item $Backup -ItemType Directory -Force | Out-Null
+    }
+
     ##
     ## -NoPerms process starts here.
     ##
