@@ -315,7 +315,7 @@ Function OptionsRun
             If ($7zT -eq $True)
             {
                 Write-Log -Type Info -Evt "Compressing using 7-Zip compression"
-                & "$env:programfiles\7-Zip\7z.exe" -bso0 a -tzip ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)) "$WorkDir\$Vm\*"
+                & "$env:programfiles\7-Zip\7z.exe" -mmt4 -bso0 a -tzip ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)) "$WorkDir\$Vm\*"
             }
 
             else {
