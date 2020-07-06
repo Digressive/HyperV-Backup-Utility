@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 20.03.20
+.VERSION 20.07.06
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -161,7 +161,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.03.20     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.07.06     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -190,46 +190,46 @@ Function Get-DateFormat
 }
 
 ## Function for logging.
-Function Write-Log($Type, $Event)
+Function Write-Log($Type, $Evt)
 {
     If ($Type -eq "Info")
     {
         If ($Null -ne $LogPath)
         {
-            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [INFO] $Event"
+            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [INFO] $Evt"
         }
         
-        Write-Host "$(Get-DateFormat) [INFO] $Event"
+        Write-Host "$(Get-DateFormat) [INFO] $Evt"
     }
 
     If ($Type -eq "Succ")
     {
         If ($Null -ne $LogPath)
         {
-            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [SUCCESS] $Event"
+            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [SUCCESS] $Evt"
         }
 
-        Write-Host -ForegroundColor Green "$(Get-DateFormat) [SUCCESS] $Event"
+        Write-Host -ForegroundColor Green "$(Get-DateFormat) [SUCCESS] $Evt"
     }
 
     If ($Type -eq "Err")
     {
         If ($Null -ne $LogPath)
         {
-            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [ERROR] $Event"
+            Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [ERROR] $Evt"
         }
 
-        Write-Host -ForegroundColor Red -BackgroundColor Black "$(Get-DateFormat) [ERROR] $Event"
+        Write-Host -ForegroundColor Red -BackgroundColor Black "$(Get-DateFormat) [ERROR] $Evt"
     }
 
     If ($Type -eq "Conf")
     {
         If ($Null -ne $LogPath)
         {
-            Add-Content -Path $Log -Encoding ASCII -Value "$Event"
+            Add-Content -Path $Log -Encoding ASCII -Value "$Evt"
         }
 
-        Write-Host -ForegroundColor Cyan -Object "$Event"
+        Write-Host -ForegroundColor Cyan -Object "$Evt"
     }
 }
 
