@@ -127,8 +127,11 @@ Param(
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $VmList,
     [alias("Wd")]
-    [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $WorkDir,
+    [alias("SzThreads")]
+    $SzThreadNo,
+    [alias("SzComp")]
+    $SzCompL,
     [alias("L")]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $LogPath,
@@ -265,7 +268,13 @@ Function OptionsRun
             ## including ones from previous versions of this script.
             If ($WorkDir -ne $Backup)
             {
-                Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                ## Make sure the backup directory exists.
+                $BackupDirT = Test-Path $Backup
+
+                If ($BackupDirT)
+                {
+                    Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                }
             }
 
             Write-Log -Type Info -Evt "Removing backup folders older than: $History days"
@@ -315,7 +324,7 @@ Function OptionsRun
             If ($7zT -eq $True)
             {
                 Write-Log -Type Info -Evt "Compressing using 7-Zip compression"
-                & "$env:programfiles\7-Zip\7z.exe" -mmt4 -bso0 a -tzip ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)) "$WorkDir\$Vm\*"
+                & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)) "$WorkDir\$Vm\*"
             }
 
             else {
@@ -353,9 +362,9 @@ Function OptionsRun
         If ($WorkDir -ne $Backup)
         {
             ## Make sure the backup directory exists.
-            $BackupFolderTest = Test-Path $Backup
+            $BackupFolderT = Test-Path $Backup
 
-            If ($BackupFolderTest -eq $False)
+            If ($BackupFolderT -eq $False)
             {
                 Write-Log -Type Info -Event "Backup directory $Backup doesn't exist. Creating it."
                 New-Item $Backup -ItemType Directory -Force | Out-Null
@@ -430,93 +439,112 @@ If ($Vms.count -ne 0)
     ## Display the current config and log if configured.
     ##
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "This virtual host is:..$Vs."
-    Write-Log -Type Conf -Evt "VMs to backup:........."
+    Write-Log -Type Conf -Evt "This virtual host is:.......$Vs."
+    Write-Log -Type Conf -Evt "VMs to backup:.............."
 
     ForEach ($Vm in $Vms)
     {
-        Write-Log -Type Conf -Evt ".......................$Vm"
+        Write-Log -Type Conf -Evt "............................$Vm"
     }
 
-    Write-Log -Type Conf -Evt "Backup directory is:...$Backup."
-    Write-Log -Type Conf -Evt "Working directory is:..$WorkDir."
+    Write-Log -Type Conf -Evt "Backup directory is:........$Backup."
+    Write-Log -Type Conf -Evt "Working directory is:.......$WorkDir."
     
     If ($Null -ne $History)
     {
-        Write-Log -Type Conf -Evt "Backups to keep:.......$History days"
+        Write-Log -Type Conf -Evt "Backups to keep:...........$History days"
     }
 
     else {
-        Write-Log -Type Conf -Evt "Backups to keep:.......No Config"
+        Write-Log -Type Conf -Evt "Backups to keep:............No Config"
     }
 
     If ($Null -ne $LogPath)
     {
-        Write-Log -Type Conf -Evt "Logs directory:........$LogPath."
+        Write-Log -Type Conf -Evt "Logs directory:.............$LogPath."
     }
     
     else {
-        Write-Log -Type Conf -Evt "Logs directory:........No Config"
+        Write-Log -Type Conf -Evt "Logs directory:.............No Config"
     }
     
     If ($MailTo)
     {
-        Write-Log -Type Conf -Evt "E-mail log to:.........$MailTo."
+        Write-Log -Type Conf -Evt "E-mail log to:..............$MailTo."
     }
     
     else {
-        Write-Log -Type Conf -Evt "E-mail log to:.........No Config"
+        Write-Log -Type Conf -Evt "E-mail log to:..............No Config"
     }
     
     If ($MailFrom)
     {
-        Write-Log -Type Conf -Evt "E-mail log from:.......$MailFrom."
+        Write-Log -Type Conf -Evt "E-mail log from:............$MailFrom."
     }
     
     else {
-        Write-Log -Type Conf -Evt "E-mail log from:.......No Config"
+        Write-Log -Type Conf -Evt "E-mail log from:............No Config"
     }
     
     If ($MailSubject)
     {
-        Write-Log -Type Conf -Evt "E-mail subject:........$MailSubject."
+        Write-Log -Type Conf -Evt "E-mail subject:.............$MailSubject."
     }
-    
+
     else {
-        Write-Log -Type Conf -Evt "E-mail subject:........Default"
+        Write-Log -Type Conf -Evt "E-mail subject:.............Default"
     }
-    
+
     If ($SmtpServer)
     {
-        Write-Log -Type Conf -Evt "SMTP server is:........$SmtpServer."
+        Write-Log -Type Conf -Evt "SMTP server is:.............$SmtpServer."
     }
-    
+
     else {
-        Write-Log -Type Conf -Evt "SMTP server is:........No Config"
+        Write-Log -Type Conf -Evt "SMTP server is:.............No Config"
     }
-    
+
     If ($SmtpUser)
     {
-        Write-Log -Type Conf -Evt "SMTP user is:..........$SmtpUser."
+        Write-Log -Type Conf -Evt "SMTP user is:...............$SmtpUser."
     }
-    
+
     else {
-        Write-Log -Type Conf -Evt "SMTP user is:..........No Config"
+        Write-Log -Type Conf -Evt "SMTP user is:...............No Config"
     }
-    
+
     If ($SmtpPwd)
     {
-        Write-Log -Type Conf -Evt "SMTP pwd file:.........$SmtpPwd."
+        Write-Log -Type Conf -Evt "SMTP pwd file:..............$SmtpPwd."
+    }
+
+    else {
+        Write-Log -Type Conf -Evt "SMTP pwd file:..............No Config"
+    }
+
+    Write-Log -Type Conf -Evt "-UseSSL switch is:..........$UseSsl."
+    Write-Log -Type Conf -Evt "-NoPerms switch is:.........$NoPerms."
+    Write-Log -Type Conf -Evt "-Compress switch is:........$Compress."
+    Write-Log -Type Conf -Evt "-Sz switch is:..............$Sz."
+
+    If ($SzThreadNo)
+    {
+        Write-Log -Type Conf -Evt "7z threads switch is:.......$SzThreadNo."
     }
     
     else {
-        Write-Log -Type Conf -Evt "SMTP pwd file:.........No Config"
+        Write-Log -Type Conf -Evt "7z threads switch is:.......No Config"
+    }
+
+    If ($SzCompL)
+    {
+        Write-Log -Type Conf -Evt "7z compression switch is:...$SzCompL."
     }
     
-    Write-Log -Type Conf -Evt "-UseSSL switch is:.....$UseSsl."
-    Write-Log -Type Conf -Evt "-NoPerms switch is:....$NoPerms."
-    Write-Log -Type Conf -Evt "-Compress switch is:...$Compress."
-    Write-Log -Type Conf -Evt "-Sz switch is:.........$Sz."
+    else {
+        Write-Log -Type Conf -Evt "7z compression switch is:...No Config"
+    }
+
     Write-Log -Type Conf -Evt "************************************************************"
     Write-Log -Type Info -Evt "Process started."
     ##
@@ -535,8 +563,8 @@ If ($Vms.count -ne 0)
             $VmInfo = Get-VM -name $Vm
 
             ## Test for the existence of a previous VM export. If it exists, delete it.
-            $VmExportBackupTest = Test-Path "$WorkDir\$Vm"
-            If ($VmExportBackupTest -eq $True)
+            $VmExportBackupT = Test-Path "$WorkDir\$Vm"
+            If ($VmExportBackupT -eq $True)
             {
                 Remove-Item "$WorkDir\$Vm" -Recurse -Force
             }
@@ -551,8 +579,8 @@ If ($Vms.count -ne 0)
             ## Test for the creation of backup folders. If they created sucessfully, report it. If they didn't, also report it.
             ##
 
-            $VmFolderTest = Test-Path "$WorkDir\$Vm\Virtual Machines"
-            If ($VmFolderTest -eq $True)
+            $VmFolderT = Test-Path "$WorkDir\$Vm\Virtual Machines"
+            If ($VmFolderT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\Virtual Machines"
             }
@@ -561,8 +589,8 @@ If ($Vms.count -ne 0)
                 Write-Log -Type Err -Evt "There was a problem creating folder $WorkDir\$Vm\Virtual Machines"
             }
 
-            $VmVHDTest = Test-Path "$WorkDir\$Vm\VHD"
-            If ($VmVHDTest -eq $True)
+            $VmVHDT = Test-Path "$WorkDir\$Vm\VHD"
+            If ($VmVHDT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\VHD"
             }
@@ -571,8 +599,8 @@ If ($Vms.count -ne 0)
                 Write-Log -Type Err -Evt "There was a problem creating folder $WorkDir\$Vm\VHD"
             }
             
-            $VmSnapTest = Test-Path "$WorkDir\$Vm\Snapshots"
-            If ($VmSnapTest -eq $True)
+            $VmSnapT = Test-Path "$WorkDir\$Vm\Snapshots"
+            If ($VmSnapT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\Snapshots"
             }
@@ -595,8 +623,8 @@ If ($Vms.count -ne 0)
             Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
             Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
 
-            $VmConfigTest = Test-Path "$WorkDir\$Vm\Virtual Machines\*"
-            If ($VmConfigTest -eq $True)
+            $VmConfigT = Test-Path "$WorkDir\$Vm\Virtual Machines\*"
+            If ($VmConfigT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully copied $Vm configuration to $WorkDir\$Vm\Virtual Machines"
             }
@@ -615,8 +643,8 @@ If ($Vms.count -ne 0)
 
             Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
 
-            $VmVHDCopyTest = Test-Path "$WorkDir\$Vm\VHD\*"
-            If ($VmVHDCopyTest -eq $True)
+            $VmVHDCopyT = Test-Path "$WorkDir\$Vm\VHD\*"
+            If ($VmVHDCopyT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully copied $Vm VHDs to $WorkDir\$Vm\VHD"
             }
@@ -641,8 +669,8 @@ If ($Vms.count -ne 0)
                 Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                 Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
 
-                $VmSnapCopyTest = Test-Path "$WorkDir\$Vm\Snapshots\*"
-                If ($VmSnapCopyTest -eq $True)
+                $VmSnapCopyT = Test-Path "$WorkDir\$Vm\Snapshots\*"
+                If ($VmSnapCopyT -eq $True)
                 {
                     Write-Log -Type Succ -Evt "Successfully copied checkpoint configuration for $WorkDir\$Vm\Snapshots"
                 }
@@ -680,8 +708,8 @@ If ($Vms.count -ne 0)
     else {
         ForEach ($Vm in $Vms)
         {
-            $VmExportBackupTest = Test-Path "$WorkDir\$Vm"
-            If ($VmExportBackupTest -eq $True)
+            $VmExportBackupT = Test-Path "$WorkDir\$Vm"
+            If ($VmExportBackupT -eq $True)
             {
                 Remove-Item "$WorkDir\$Vm" -Recurse -Force
             }
@@ -700,8 +728,8 @@ If ($Vms.count -ne 0)
         $Vms | Export-VM -Path "$WorkDir"
 
         ## Test if the export suceeded.
-        $VmExportTest = Test-Path "$WorkDir\*"
-        If ($VmExportTest -eq $True)
+        $VmExportT = Test-Path "$WorkDir\*"
+        If ($VmExportT -eq $True)
         {
             Write-Log -Type Succ -Evt "Successfully exported specified VMs to $WorkDir"
         }
