@@ -152,6 +152,7 @@ Param(
     [switch]$NoPerms,
     [switch]$Compress,
     [switch]$Sz,
+    [switch]$ShortDate,
     [switch]$NoBanner)
 
 If ($NoBanner -eq $False)
@@ -190,6 +191,16 @@ If ($LogPath)
 Function Get-DateFormat
 {
     Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+}
+
+Function Get-DateShort
+{
+    Get-Date -Format "yyyy-MM-dd"
+}
+
+Function Get-DateLong
+{
+    Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 }
 
 ## Function for logging.
@@ -243,13 +254,27 @@ Function OptionsRun
     If ($Null -eq $History -And $Compress -eq $False)
     {
         ## Remove all previous backup folders, including ones from previous versions of this script.
-        Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+        If ($ShortDate)
+        {
+            Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Remove-Item -Recurse -Force
+        }
+
+        else {
+            Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+        }
 
         ## If a working directory is configured by the user, remove all previous backup folders, including
         ## ones from previous versions of this script.
         If ($WorkDir -ne $Backup)
         {
-            Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+            If ($ShortDate)
+            {
+                Get-ChildItem -Path $Backup -Filter "$Vm-*-*-*" -Directory | Remove-Item -Recurse -Force
+            }
+
+            else {
+                Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+            }
         }
 
         Write-Log -Type Info -Evt "Removing previous backups of $Vm"
@@ -261,7 +286,14 @@ Function OptionsRun
         {
             ## Remove previous backup folders older than the configured number of days, including
             ## ones from previous versions of this script.
-            Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+            If ($ShortDate)
+            {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+            }
+
+            else {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+            }
 
             ## If a working directory is configured by the user, remove previous backup folders
             ## older than the configured number of days remove all previous backup folders,
@@ -273,7 +305,14 @@ Function OptionsRun
 
                 If ($BackupDirT)
                 {
-                    Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                    If ($ShortDate)
+                    {
+                        Get-ChildItem -Path $Backup -Filter "$Vm-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                    }
+
+                    else {
+                        Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                    }
                 }
             }
 
@@ -287,13 +326,27 @@ Function OptionsRun
         If ($Null -eq $History)
         {
             ## Remove all previous compressed backups, including ones from previous versions of this script.
-            Remove-Item "$WorkDir\$Vm-*-*-***-*-*.zip" -Force
+            If ($ShortDate)
+            {
+                Remove-Item "$WorkDir\$Vm-*-*-*.zip" -Force
+            }
+
+            else {
+                Remove-Item "$WorkDir\$Vm-*-*-***-*-*.zip" -Force
+            }
 
             ## If a working directory is configured by the user, remove all previous compressed backups,
             ## including ones from previous versions of this script.
             If ($WorkDir -ne $Backup)
             {
-                Remove-Item "$Backup\$Vm-*-*-***-*-*.zip" -Force
+                If ($ShortDate)
+                {
+                    Remove-Item "$Backup\$Vm-*-*-*.zip" -Force
+                }
+
+                else {
+                    Remove-Item "$Backup\$Vm-*-*-***-*-*.zip" -Force
+                }
             }
 
             Write-Log -Type Info -Evt "Removing previous compressed backups"
@@ -304,13 +357,27 @@ Function OptionsRun
             
             ## Remove previous compressed backups older than the configured number of days, including
             ## ones from previous versions of this script.
-            Get-ChildItem -Path "$WorkDir\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+            If ($ShortDate)
+            {
+                Get-ChildItem -Path "$WorkDir\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+            }
+
+            else {
+                Get-ChildItem -Path "$WorkDir\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+            }
 
             ## If a working directory is configured by the user, remove previous compressed backups older
             ## than the configured number of days, including ones from previous versions of this script.
             If ($WorkDir -ne $Backup)
             {
-                Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                If ($ShortDate)
+                {
+                    Get-ChildItem -Path "$Backup\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
+
+                else {
+                    Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
             }
 
             Write-Log -Type Info -Evt "Removing compressed backups older than: $History days"
@@ -324,13 +391,27 @@ Function OptionsRun
             If ($7zT -eq $True)
             {
                 Write-Log -Type Info -Evt "Compressing using 7-Zip compression"
-                & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)) "$WorkDir\$Vm\*"
+                If ($ShortDate)
+                {
+                    & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateShort).zip") "$WorkDir\$Vm\*"
+                }
+
+                else {
+                    & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateLong).zip") "$WorkDir\$Vm\*"
+                }
             }
 
             else {
                 Write-Log -Type Info -Evt "Compressing using Windows compression"
                 Add-Type -AssemblyName "system.io.compression.filesystem"
-                [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)))
+                If ($ShortDate)
+                {
+                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
+                }
+
+                else {
+                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+                }
             }
         }
 
@@ -339,11 +420,46 @@ Function OptionsRun
         else {
             Write-Log -Type Info -Evt "Compressing using Windows compression"
             Add-Type -AssemblyName "system.io.compression.filesystem"
-            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}.zip" -f (Get-Date)))
+
+            If ($ShortDate)
+            {
+                $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort).zip")
+
+                If ($ShortDateT)
+                {
+                    $i = 1
+                    $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                    $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+
+                    If ($ShortDateExistT)
+                    {
+                        do {
+                            $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                            $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                        } until ($ShortDateExistT -eq $false)
+                    }
+                }
+
+                else {
+                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
+                }
+            }
+
+            else {
+                [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+            }
         }
 
         ## Test if the compressed file was created.
-        $VmZipT = Test-Path "$WorkDir\$Vm-*-*-***-*-*.zip"
+        If ($ShortDate)
+        {
+            $VmZipT = Test-Path "$WorkDir\$Vm-*-*-*.zip"
+        }
+
+        else {
+            $VmZipT = Test-Path "$WorkDir\$Vm-*-*-***-*-*.zip"
+        }
+
         If ($VmZipT -eq $True)
         {
             Write-Log -Type Succ -Evt "Successfully created compressed backup of $Vm in $WorkDir"
@@ -370,10 +486,25 @@ Function OptionsRun
                 New-Item $Backup -ItemType Directory -Force | Out-Null
             }
 
-            Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.zip" | Move-Item -Destination $Backup
+            If ($ShortDate)
+            {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup
+            }
+
+            else {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.zip" | Move-Item -Destination $Backup
+            }
 
             ## Test if the move suceeded.
-            $VmMoveT = Test-Path "$Backup\$Vm-*-*-*-*-*.zip"
+            If ($ShortDate)
+            {
+                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*.zip"
+            }
+
+            else {
+                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*-*-*.zip"
+            }
+
             If ($VmMoveT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully moved compressed backup of $Vm to $Backup"
@@ -389,14 +520,36 @@ Function OptionsRun
     ## If the -compress switch is NOT configured AND if the -keep switch is NOT configured, rename
     ## the export of each VM to include the date.
     else {
-        Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-{0:yyyy-MM-dd_HH-mm-ss}" -f (Get-Date))
+        If ($ShortDate)
+        {
+            Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateShort)")
+        }
+
+        else {
+            Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateLong)")
+        }
 
         If ($WorkDir -ne $Backup)
         {
-            Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-{0:yyyy-MM-dd_HH-mm-ss}" -f (Get-Date))
+            If ($ShortDate)
+            {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateShort)")
+            }
+
+            else {
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateLong)")
+            }
 
             ## Test if the move suceeded.
-            $VmMoveT = Test-Path "$Backup\$Vm-*-*-***-*-*"
+            If ($ShortDate)
+            {
+                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*"
+            }
+
+            else {
+                $VmMoveT = Test-Path "$Backup\$Vm-*-*-***-*-*"
+            }
+
             If ($VmMoveT -eq $True)
             {
                 Write-Log -Type Succ -Evt "Successfully moved export of $Vm to $Backup"
@@ -435,116 +588,115 @@ If ($Vms.count -ne 0)
         $WorkDir = "$Backup"
     }
 
+    If ($Null -eq $SzThreadNo)
+    {
+        $SzThreadNo = "mmt1"
+    }
+
+    If ($Null -eq $SzCompL)
+    {
+        $SzCompL = "mx1"
+    }
+
+    If ($Null -eq $ShortDate)
+    {
+        $ShortDate = "$LongDate"
+    }
+
     ##
     ## Display the current config and log if configured.
     ##
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "This virtual host is:.......$Vs."
-    Write-Log -Type Conf -Evt "VMs to backup:.............."
+    Write-Log -Type Conf -Evt "This virtual host:.......$Vs."
+    Write-Log -Type Conf -Evt "VMs to backup:..........."
 
     ForEach ($Vm in $Vms)
     {
-        Write-Log -Type Conf -Evt "............................$Vm"
+        Write-Log -Type Conf -Evt ".........................$Vm"
     }
 
-    Write-Log -Type Conf -Evt "Backup directory is:........$Backup."
-    Write-Log -Type Conf -Evt "Working directory is:.......$WorkDir."
+    Write-Log -Type Conf -Evt "Backup directory:........$Backup."
+    Write-Log -Type Conf -Evt "Working directory:.......$WorkDir."
     
     If ($Null -ne $History)
     {
-        Write-Log -Type Conf -Evt "Backups to keep:...........$History days"
+        Write-Log -Type Conf -Evt "Backups to keep:........$History days"
     }
 
     else {
-        Write-Log -Type Conf -Evt "Backups to keep:............No Config"
+        Write-Log -Type Conf -Evt "Backups to keep:.........No Config"
     }
 
     If ($Null -ne $LogPath)
     {
-        Write-Log -Type Conf -Evt "Logs directory:.............$LogPath."
+        Write-Log -Type Conf -Evt "Logs directory:..........$LogPath."
     }
     
     else {
-        Write-Log -Type Conf -Evt "Logs directory:.............No Config"
+        Write-Log -Type Conf -Evt "Logs directory:..........No Config"
     }
     
     If ($MailTo)
     {
-        Write-Log -Type Conf -Evt "E-mail log to:..............$MailTo."
+        Write-Log -Type Conf -Evt "E-mail log to:...........$MailTo."
     }
     
     else {
-        Write-Log -Type Conf -Evt "E-mail log to:..............No Config"
+        Write-Log -Type Conf -Evt "E-mail log to:...........No Config"
     }
     
     If ($MailFrom)
     {
-        Write-Log -Type Conf -Evt "E-mail log from:............$MailFrom."
+        Write-Log -Type Conf -Evt "E-mail log from:.........$MailFrom."
     }
     
     else {
-        Write-Log -Type Conf -Evt "E-mail log from:............No Config"
+        Write-Log -Type Conf -Evt "E-mail log from:.........No Config"
     }
     
     If ($MailSubject)
     {
-        Write-Log -Type Conf -Evt "E-mail subject:.............$MailSubject."
+        Write-Log -Type Conf -Evt "E-mail subject:..........$MailSubject."
     }
 
     else {
-        Write-Log -Type Conf -Evt "E-mail subject:.............Default"
+        Write-Log -Type Conf -Evt "E-mail subject:..........Default"
     }
 
     If ($SmtpServer)
     {
-        Write-Log -Type Conf -Evt "SMTP server is:.............$SmtpServer."
+        Write-Log -Type Conf -Evt "SMTP server:.............$SmtpServer."
     }
 
     else {
-        Write-Log -Type Conf -Evt "SMTP server is:.............No Config"
+        Write-Log -Type Conf -Evt "SMTP server:.............No Config"
     }
 
     If ($SmtpUser)
     {
-        Write-Log -Type Conf -Evt "SMTP user is:...............$SmtpUser."
+        Write-Log -Type Conf -Evt "SMTP user:...............$SmtpUser."
     }
 
     else {
-        Write-Log -Type Conf -Evt "SMTP user is:...............No Config"
+        Write-Log -Type Conf -Evt "SMTP user:...............No Config"
     }
 
     If ($SmtpPwd)
     {
-        Write-Log -Type Conf -Evt "SMTP pwd file:..............$SmtpPwd."
+        Write-Log -Type Conf -Evt "SMTP pwd file:...........$SmtpPwd."
     }
 
     else {
-        Write-Log -Type Conf -Evt "SMTP pwd file:..............No Config"
+        Write-Log -Type Conf -Evt "SMTP pwd file:...........No Config"
     }
 
-    Write-Log -Type Conf -Evt "-UseSSL switch is:..........$UseSsl."
-    Write-Log -Type Conf -Evt "-NoPerms switch is:.........$NoPerms."
-    Write-Log -Type Conf -Evt "-Compress switch is:........$Compress."
-    Write-Log -Type Conf -Evt "-Sz switch is:..............$Sz."
-
-    If ($SzThreadNo)
-    {
-        Write-Log -Type Conf -Evt "7z threads switch is:.......$SzThreadNo."
-    }
-    
-    else {
-        Write-Log -Type Conf -Evt "7z threads switch is:.......No Config"
-    }
-
-    If ($SzCompL)
-    {
-        Write-Log -Type Conf -Evt "7z compression switch is:...$SzCompL."
-    }
-    
-    else {
-        Write-Log -Type Conf -Evt "7z compression switch is:...No Config"
-    }
-
+    Write-Log -Type Conf -Evt "-UseSSL switch:..........$UseSsl."
+    Write-Log -Type Conf -Evt "-NoPerms switch:.........$NoPerms."
+    Write-Log -Type Conf -Evt "-ShortDate switch:.......$ShortDate."
+    Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
+    Write-Log -Type Conf -Evt "-Sz switch:..............$Sz."
+    Write-Log -Type Conf -Evt "7z threads switch:.......$SzThreadNo."
+    Write-Log -Type Conf -Evt "7z compression switch:...$SzCompL."
     Write-Log -Type Conf -Evt "************************************************************"
     Write-Log -Type Info -Evt "Process started."
     ##
