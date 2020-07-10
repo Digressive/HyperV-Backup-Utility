@@ -393,6 +393,25 @@ Function OptionsRun
                 Write-Log -Type Info -Evt "Compressing using 7-Zip compression"
                 If ($ShortDate)
                 {
+                    $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort).zip")
+
+                    If ($ShortDateT)
+                    {
+                        $i = 1
+                        $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                        $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+
+                        If ($ShortDateExistT)
+                        {
+                            do {
+                                $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                                $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                            } until ($ShortDateExistT -eq $false)
+                        }
+
+                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                    }
+
                     & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateShort).zip") "$WorkDir\$Vm\*"
                 }
 
@@ -406,6 +425,25 @@ Function OptionsRun
                 Add-Type -AssemblyName "system.io.compression.filesystem"
                 If ($ShortDate)
                 {
+                    $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort).zip")
+
+                    If ($ShortDateT)
+                    {
+                        $i = 1
+                        $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                        $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+
+                        If ($ShortDateExistT)
+                        {
+                            do {
+                                $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                                $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                            } until ($ShortDateExistT -eq $false)
+                        }
+
+                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                    }
+
                     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
                 }
 
@@ -438,6 +476,8 @@ Function OptionsRun
                             $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
                         } until ($ShortDateExistT -eq $false)
                     }
+
+                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
                 }
 
                 else {
@@ -517,11 +557,30 @@ Function OptionsRun
         }
     }
 
-    ## If the -compress switch is NOT configured AND if the -keep switch is NOT configured, rename
+    ## If the -compress switch is NOT configured AND if the -keep switch is configured, rename
     ## the export of each VM to include the date.
     else {
         If ($ShortDate)
         {
+            $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort)")
+
+            If ($ShortDateT)
+            {
+                $i = 1
+                $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
+                $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+
+                If ($ShortDateExistT)
+                {
+                    do {
+                        $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
+                        $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                    } until ($ShortDateExistT -eq $false)
+                }
+
+                Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+            }
+
             Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateShort)")
         }
 
@@ -620,7 +679,7 @@ If ($Vms.count -ne 0)
     
     If ($Null -ne $History)
     {
-        Write-Log -Type Conf -Evt "Backups to keep:........$History days"
+        Write-Log -Type Conf -Evt "Backups to keep:.........$History days"
     }
 
     else {
