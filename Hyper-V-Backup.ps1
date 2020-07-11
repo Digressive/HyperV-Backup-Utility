@@ -528,6 +528,25 @@ Function OptionsRun
 
             If ($ShortDate)
             {
+                $ShortDateT = Test-Path -Path ("$Backup\$Vm-$(Get-DateShort).zip")
+
+                If ($ShortDateT)
+                {
+                    $i = 1
+                    $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                    $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+
+                    If ($ShortDateExistT)
+                    {
+                        do {
+                            $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                            $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+                        } until ($ShortDateExistT -eq $false)
+                    }
+
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup\$ShortDateNN
+                }
+
                 Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup
             }
 
@@ -592,7 +611,26 @@ Function OptionsRun
         {
             If ($ShortDate)
             {
-                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateShort)")
+                $ShortDateT = Test-Path -Path ("$Backup\$Vm-$(Get-DateShort)")
+
+                If ($ShortDateT)
+                {
+                    $i = 1
+                    $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
+                    $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+
+                    If ($ShortDateExistT)
+                    {
+                        do {
+                            $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
+                            $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+                        } until ($ShortDateExistT -eq $false)
+                    }
+
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN
+                }
+
+                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateShort)")
             }
 
             else {
