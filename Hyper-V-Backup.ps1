@@ -176,7 +176,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.07.06     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.07.13     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
