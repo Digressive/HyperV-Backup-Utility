@@ -116,14 +116,14 @@
 
     .EXAMPLE
     Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -Wd E:\temp -NoPerms -Keep 30
-    -Compress -Sz -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com
+    -Compress -Sz -SzThreads mmt8 -SzComp mx5 -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com
     -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
 
     This will shutdown, one at a time, all the VMs listed in the file located in C:\scripts\vms.txt
     and back up their files to \\nas\vms, using E:\temp as a working directory. A zip file for each
-    VM folder will be created, and the folder will be deleted. Any backups older than 30 days will
-    also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a
-    custom subject line.
+    VM folder will be created using 7-zip. 7-zip will use 8 threads and medium compression. Any
+    backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs
+    and sent via e-mail with a custom subject line.
 #>
 
 ## Set up command line switches.
