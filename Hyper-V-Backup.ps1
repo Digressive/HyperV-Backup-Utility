@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 20.07.06
+.VERSION 20.07.13
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -72,6 +72,17 @@
     .PARAMETER Sz
     Configure the utility to use 7-Zip to compress the VM backups.
     7-Zip must be installed in the default location ($env:ProgramFiles) if it is not found, Windows compression will be used as a fallback.
+    
+    .PARAMETER SzThreads
+    Configure 7-Zip to use more threads. mmt1 [1 thread] - mmt8 [8 threads].
+    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
+
+    .PARAMETER SzComp
+    Configure 7-Zip's compression strength. mx1 [fast compression] - mx9 [ultra compression].
+    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
+
+    .PARAMETER ShortDate
+    Configure the script to use only the Year, Month and Day in backup filenames.
 
     .PARAMETER NoBanner
     Use this option to hide the ASCII art title in the console.
@@ -212,7 +223,7 @@ Function Write-Log($Type, $Evt)
         {
             Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [INFO] $Evt"
         }
-        
+
         Write-Host "$(Get-DateFormat) [INFO] $Evt"
     }
 
@@ -253,6 +264,8 @@ Function OptionsRun
     ## If the -keep switch AND the -compress switch are NOT configured.
     If ($Null -eq $History -And $Compress -eq $False)
     {
+        Write-Log -Type Info -Evt "Removing previous backups of $Vm"
+
         ## Remove all previous backup folders, including ones from previous versions of this script.
         If ($ShortDate)
         {
@@ -267,23 +280,29 @@ Function OptionsRun
         ## ones from previous versions of this script.
         If ($WorkDir -ne $Backup)
         {
-            If ($ShortDate)
-            {
-                Get-ChildItem -Path $Backup -Filter "$Vm-*-*-*" -Directory | Remove-Item -Recurse -Force
-            }
+            ## Make sure the backup directory exists.
+            $BackupFolderT = Test-Path $Backup
 
-            else {
-                Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+            If ($BackupFolderT)
+            {
+                If ($ShortDate)
+                {
+                    Get-ChildItem -Path $Backup -Filter "$Vm-*-*-*" -Directory | Remove-Item -Recurse -Force
+                }
+
+                else {
+                    Get-ChildItem -Path $Backup -Filter "$Vm-*-*-***-*-*" -Directory | Remove-Item -Recurse -Force
+                }
             }
         }
-
-        Write-Log -Type Info -Evt "Removing previous backups of $Vm"
     }
 
     ## If the -keep option IS configured AND the -compress option is NOT configured.
     else {
         If ($Compress -eq $False)
         {
+            Write-Log -Type Info -Evt "Removing backup folders of $Vm older than: $History days"
+
             ## Remove previous backup folders older than the configured number of days, including
             ## ones from previous versions of this script.
             If ($ShortDate)
@@ -315,8 +334,6 @@ Function OptionsRun
                     }
                 }
             }
-
-            Write-Log -Type Info -Evt "Removing backup folders older than: $History days"
         }
     }
 
@@ -325,6 +342,8 @@ Function OptionsRun
     {
         If ($Null -eq $History)
         {
+            Write-Log -Type Info -Evt "Removing previous compressed backups"
+
             ## Remove all previous compressed backups, including ones from previous versions of this script.
             If ($ShortDate)
             {
@@ -339,22 +358,28 @@ Function OptionsRun
             ## including ones from previous versions of this script.
             If ($WorkDir -ne $Backup)
             {
-                If ($ShortDate)
-                {
-                    Remove-Item "$Backup\$Vm-*-*-*.zip" -Force
-                }
+                ## Make sure the backup directory exists.
+                $BackupFolderT = Test-Path $Backup
 
-                else {
-                    Remove-Item "$Backup\$Vm-*-*-***-*-*.zip" -Force
+                If ($BackupFolderT)
+                {
+                    If ($ShortDate)
+                    {
+                        Remove-Item "$Backup\$Vm-*-*-*.zip" -Force
+                    }
+
+                    else {
+                        Remove-Item "$Backup\$Vm-*-*-***-*-*.zip" -Force
+                    }
                 }
             }
-
-            Write-Log -Type Info -Evt "Removing previous compressed backups"
         }
 
         ## If the -compress switch IS configured AND if the -keep switch IS configured.
         else {
-            
+
+            Write-Log -Type Info -Evt "Removing compressed backups of $Vm older than: $History days"
+
             ## Remove previous compressed backups older than the configured number of days, including
             ## ones from previous versions of this script.
             If ($ShortDate)
@@ -370,17 +395,21 @@ Function OptionsRun
             ## than the configured number of days, including ones from previous versions of this script.
             If ($WorkDir -ne $Backup)
             {
-                If ($ShortDate)
-                {
-                    Get-ChildItem -Path "$Backup\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
-                }
+                ## Make sure the backup directory exists.
+                $BackupFolderT = Test-Path $Backup
 
-                else {
-                    Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                If ($BackupFolderT)
+                {
+                    If ($ShortDate)
+                    {
+                        Get-ChildItem -Path "$Backup\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                    }
+
+                    else {
+                        Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                    }
                 }
             }
-
-            Write-Log -Type Info -Evt "Removing compressed backups older than: $History days"
         }
 
         ## If the -compress switch and the -Sz switch IS configured, test for 7zip being installed.
@@ -390,13 +419,15 @@ Function OptionsRun
             $7zT = Test-Path "$env:programfiles\7-Zip\7z.exe"
             If ($7zT -eq $True)
             {
-                Write-Log -Type Info -Evt "Compressing using 7-Zip compression"
+                Write-Log -Type Info -Evt "Compressing $Vm backup using 7-Zip compression"
+
                 If ($ShortDate)
                 {
                     $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort).zip")
 
                     If ($ShortDateT)
                     {
+                        Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                         $i = 1
                         $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
                         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
@@ -409,19 +440,34 @@ Function OptionsRun
                             } until ($ShortDateExistT -eq $false)
                         }
 
-                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                        try {
+                            & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                        }
+                        catch{
+                            $_.Exception.Message | Write-Log -Type Err -Evt $_
+                        }
                     }
 
-                    & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateShort).zip") "$WorkDir\$Vm\*"
+                    try {
+                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateShort).zip") "$WorkDir\$Vm\*"
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
 
                 else {
-                    & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateLong).zip") "$WorkDir\$Vm\*"
+                    try {
+                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateLong).zip") "$WorkDir\$Vm\*"
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
             }
 
             else {
-                Write-Log -Type Info -Evt "Compressing using Windows compression"
+                Write-Log -Type Info -Evt "Compressing $Vm backup using Windows compression"
                 Add-Type -AssemblyName "system.io.compression.filesystem"
                 If ($ShortDate)
                 {
@@ -429,6 +475,7 @@ Function OptionsRun
 
                     If ($ShortDateT)
                     {
+                        Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                         $i = 1
                         $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
                         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
@@ -441,14 +488,22 @@ Function OptionsRun
                             } until ($ShortDateExistT -eq $false)
                         }
 
-                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                        try {
+                            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                        }
+                        catch{
+                            $_.Exception.Message | Write-Log -Type Err -Evt $_
+                        }
                     }
-
-                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
                 }
 
                 else {
-                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+                    try {
+                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
             }
         }
@@ -456,7 +511,8 @@ Function OptionsRun
         ## If the -compress switch IS configured and the -Sz switch is NOT configured, compress
         ## the backup folder using Windows compression.
         else {
-            Write-Log -Type Info -Evt "Compressing using Windows compression"
+
+            Write-Log -Type Info -Evt "Compressing $Vm backup using Windows compression"
             Add-Type -AssemblyName "system.io.compression.filesystem"
 
             If ($ShortDate)
@@ -465,6 +521,7 @@ Function OptionsRun
 
                 If ($ShortDateT)
                 {
+                    Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                     $i = 1
                     $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
                     $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
@@ -477,38 +534,33 @@ Function OptionsRun
                         } until ($ShortDateExistT -eq $false)
                     }
 
-                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                    try {
+                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
 
                 else {
-                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
+                    try {
+                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateShort).zip"))
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
             }
 
             else {
-                [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+                try {
+                    [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$Vm-$(Get-DateLong).zip"))
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
         }
-
-        ## Test if the compressed file was created.
-        If ($ShortDate)
-        {
-            $VmZipT = Test-Path "$WorkDir\$Vm-*-*-*.zip"
-        }
-
-        else {
-            $VmZipT = Test-Path "$WorkDir\$Vm-*-*-***-*-*.zip"
-        }
-
-        If ($VmZipT -eq $True)
-        {
-            Write-Log -Type Succ -Evt "Successfully created compressed backup of $Vm in $WorkDir"
-        }
-
-        else {
-            Write-Log -Type Err -Evt "There was a problem creating a compressed backup of $Vm in $WorkDir"
-        }
-        ## End of testing for file creation.
 
         ## Remove the VMs export folder.
         Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
@@ -522,7 +574,7 @@ Function OptionsRun
 
             If ($BackupFolderT -eq $False)
             {
-                Write-Log -Type Info -Event "Backup directory $Backup doesn't exist. Creating it."
+                Write-Log -Type Info -Evt "Backup directory $Backup doesn't exist. Creating it."
                 New-Item $Backup -ItemType Directory -Force | Out-Null
             }
 
@@ -532,6 +584,7 @@ Function OptionsRun
 
                 If ($ShortDateT)
                 {
+                    Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                     $i = 1
                     $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
                     $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
@@ -544,35 +597,30 @@ Function OptionsRun
                         } until ($ShortDateExistT -eq $false)
                     }
 
-                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup\$ShortDateNN
+                    try {
+                        Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup\$ShortDateNN
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
 
-                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
 
             else {
-                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.zip" | Move-Item -Destination $Backup
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.zip" | Move-Item -Destination $Backup
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
-
-            ## Test if the move suceeded.
-            If ($ShortDate)
-            {
-                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*.zip"
-            }
-
-            else {
-                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*-*-*.zip"
-            }
-
-            If ($VmMoveT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully moved compressed backup of $Vm to $Backup"
-            }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem moving compressed backup of $Vm to $Backup"
-            }
-            ## End of testing for move.
         }
     }
 
@@ -585,6 +633,7 @@ Function OptionsRun
 
             If ($ShortDateT)
             {
+                Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                 $i = 1
                 $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
                 $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
@@ -597,24 +646,49 @@ Function OptionsRun
                     } until ($ShortDateExistT -eq $false)
                 }
 
-                Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
 
-            Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateShort)")
+            try {
+                Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateShort)")
+            }
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
+            }
         }
 
         else {
-            Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateLong)")
+            try {
+                Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$Vm-$(Get-DateLong)")
+            }
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
+            }
         }
 
         If ($WorkDir -ne $Backup)
         {
+            ## Make sure the backup directory exists.
+            $BackupFolderT = Test-Path $Backup
+
+            If ($BackupFolderT -eq $False)
+            {
+                Write-Log -Type Info -Evt "Backup directory $Backup doesn't exist. Creating it."
+                New-Item $Backup -ItemType Directory -Force | Out-Null
+            }
+
             If ($ShortDate)
             {
                 $ShortDateT = Test-Path -Path ("$Backup\$Vm-$(Get-DateShort)")
 
                 If ($ShortDateT)
                 {
+                    Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                     $i = 1
                     $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
                     $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
@@ -627,36 +701,30 @@ Function OptionsRun
                         } until ($ShortDateExistT -eq $false)
                     }
 
-                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN
+                    try {
+                        Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
+                    }
+                    catch{
+                        $_.Exception.Message | Write-Log -Type Err -Evt $_
+                    }
                 }
 
-                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateShort)")
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateShort)") -ErrorAction 'Stop'
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
 
             else {
-                Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateLong)")
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-***-*-*" -Directory | Move-Item -Destination ("$Backup\$Vm-$(Get-DateLong)") -ErrorAction 'Stop'
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
-
-            ## Test if the move suceeded.
-            If ($ShortDate)
-            {
-                $VmMoveT = Test-Path "$Backup\$Vm-*-*-*"
-            }
-
-            else {
-                $VmMoveT = Test-Path "$Backup\$Vm-*-*-***-*-*"
-            }
-
-            If ($VmMoveT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully moved export of $Vm to $Backup"
-            }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem moving export of $Vm to $Backup"
-            }
-
-            ## End of testing.
         }
     }
 }
@@ -792,8 +860,8 @@ If ($Vms.count -ne 0)
     Write-Log -Type Conf -Evt "-ShortDate switch:.......$ShortDate."
     Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
     Write-Log -Type Conf -Evt "-Sz switch:..............$Sz."
-    Write-Log -Type Conf -Evt "7z threads switch:.......$SzThreadNo."
-    Write-Log -Type Conf -Evt "7z compression switch:...$SzCompL."
+    Write-Log -Type Conf -Evt "7-zip threads:...........$SzThreadNo."
+    Write-Log -Type Conf -Evt "7-zip compression:.......$SzCompL."
     Write-Log -Type Conf -Evt "************************************************************"
     Write-Log -Type Info -Evt "Process started."
     ##
@@ -819,48 +887,15 @@ If ($Vms.count -ne 0)
             }
 
             ## Create directories for the VM export.
-            New-Item "$WorkDir\$Vm" -ItemType Directory -Force | Out-Null
-            New-Item "$WorkDir\$Vm\Virtual Machines" -ItemType Directory -Force | Out-Null
-            New-Item "$WorkDir\$Vm\VHD" -ItemType Directory -Force | Out-Null
-            New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
-
-            ##
-            ## Test for the creation of backup folders. If they created sucessfully, report it. If they didn't, also report it.
-            ##
-
-            $VmFolderT = Test-Path "$WorkDir\$Vm\Virtual Machines"
-            If ($VmFolderT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\Virtual Machines"
+            try {
+                New-Item "$WorkDir\$Vm" -ItemType Directory -Force | Out-Null
+                New-Item "$WorkDir\$Vm\Virtual Machines" -ItemType Directory -Force | Out-Null
+                New-Item "$WorkDir\$Vm\VHD" -ItemType Directory -Force | Out-Null
+                New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
             }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem creating folder $WorkDir\$Vm\Virtual Machines"
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
             }
-
-            $VmVHDT = Test-Path "$WorkDir\$Vm\VHD"
-            If ($VmVHDT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\VHD"
-            }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem creating folder $WorkDir\$Vm\VHD"
-            }
-            
-            $VmSnapT = Test-Path "$WorkDir\$Vm\Snapshots"
-            If ($VmSnapT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully created backup folder $WorkDir\$Vm\Snapshots"
-            }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem creating folder $WorkDir\$Vm\Snapshots"
-            }
-
-            ##
-            ## End of folder creation testing.
-            ##
 
             Write-Log -Type Info -Evt "Stopping VM: $Vm"
             Stop-VM $Vm
@@ -869,17 +904,12 @@ If ($Vms.count -ne 0)
             ## Copy the VM config files and test for success or failure.
             ##
 
-            Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
-            Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
-
-            $VmConfigT = Test-Path "$WorkDir\$Vm\Virtual Machines\*"
-            If ($VmConfigT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully copied $Vm configuration to $WorkDir\$Vm\Virtual Machines"
+            try {
+                Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
+                Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
             }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem copying the configuration for $Vm"
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
             }
 
             ##
@@ -890,16 +920,11 @@ If ($Vms.count -ne 0)
             ## Copy the VHDs and test for success or failure.
             ##
 
-            Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
-
-            $VmVHDCopyT = Test-Path "$WorkDir\$Vm\VHD\*"
-            If ($VmVHDCopyT -eq $True)
-            {
-                Write-Log -Type Succ -Evt "Successfully copied $Vm VHDs to $WorkDir\$Vm\VHD"
+            try {
+                Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
             }
-
-            else {
-                Write-Log -Type Err -Evt "There was a problem copying the VHDs for $Vm"
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
             }
 
             ##
@@ -915,17 +940,12 @@ If ($Vms.count -ne 0)
                 ## Copy the snapshot config files and test for success or failure.
                 ##
 
-                Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
-                Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
-
-                $VmSnapCopyT = Test-Path "$WorkDir\$Vm\Snapshots\*"
-                If ($VmSnapCopyT -eq $True)
-                {
-                    Write-Log -Type Succ -Evt "Successfully copied checkpoint configuration for $WorkDir\$Vm\Snapshots"
+                try {
+                    Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
+                    Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                 }
-
-                else {
-                    Write-Log -Type Err -Evt "There was a problem copying the checkpoint configuration for $Vm"
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
                 }
 
                 ##
@@ -933,8 +953,12 @@ If ($Vms.count -ne 0)
                 ##
 
                 ## Copy the snapshot root VHD.
-                Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
-                Write-Log -Type Succ -Evt "Successfully copied checkpoint VHDs for $Vm to $WorkDir\$Vm\VHD"
+                try {
+                    Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force -ErrorAction 'Stop'
+                }
+                catch{
+                    $_.Exception.Message | Write-Log -Type Err -Evt $_
+                }
             }
 
             Start-VM $Vm
@@ -946,7 +970,6 @@ If ($Vms.count -ne 0)
 
     ##
     ## -NoPerms process ends here.
-    ##
     ##
     ##
     ## Standard export process starts here.
@@ -974,17 +997,15 @@ If ($Vms.count -ne 0)
         }
 
         ## Do a regular export of the VMs.
-        $Vms | Export-VM -Path "$WorkDir"
-
-        ## Test if the export suceeded.
-        $VmExportT = Test-Path "$WorkDir\*"
-        If ($VmExportT -eq $True)
+        ForEach ($Vm in $Vms)
         {
-            Write-Log -Type Succ -Evt "Successfully exported specified VMs to $WorkDir"
-        }
-
-        else {
-            Write-Log -Type Err -Evt "There was a problem exporting the specified VMs to $WorkDir"
+            Write-Log -Type Info -Evt "Attempting to export $Vm"
+            try {
+                $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+            }
+            catch{
+                $_.Exception.Message | Write-Log -Type Err -Evt $_
+            }
         }
 
         ## Run the configuration options on the above backup files and folders.
@@ -1016,7 +1037,7 @@ If ($LogPath)
             $MailSubject = "Hyper-V Backup Utility Log"
         }
 
-        ## Setting the contents of the log to be the e-mail body. 
+        ## Setting the contents of the log to be the e-mail body.
         $MailBody = Get-Content -Path $Log | Out-String
 
         ## If an smtp password is configured, get the username and password together for authentication.
