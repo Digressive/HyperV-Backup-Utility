@@ -72,7 +72,7 @@
     .PARAMETER Sz
     Configure the utility to use 7-Zip to compress the VM backups.
     7-Zip must be installed in the default location ($env:ProgramFiles) if it is not found, Windows compression will be used as a fallback.
-    
+
     .PARAMETER SzThreads
     Configure 7-Zip to use more threads. mmt1 [1 thread] - mmt8 [8 threads].
     Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
@@ -104,6 +104,9 @@
 
     .PARAMETER Smtp
     The DNS name or IP address of the SMTP server.
+
+    .PARAMETER SmtpPort
+    The TCP port of the SMTP server. Default is 25. Other common ports are 465 and 587. Check with your mail provider.
 
     .PARAMETER User
     The user account to authenticate to the SMTP server.
@@ -154,6 +157,7 @@ Param(
     $MailFrom,
     [alias("Smtp")]
     $SmtpServer,
+    $SmtpPort = 25,
     [alias("User")]
     $SmtpUser,
     [alias("Pwd")]
@@ -782,7 +786,7 @@ If ($Vms.count -ne 0)
 
     Write-Log -Type Conf -Evt "Backup directory:........$Backup."
     Write-Log -Type Conf -Evt "Working directory:.......$WorkDir."
-    
+
     If ($Null -ne $History)
     {
         Write-Log -Type Conf -Evt "Backups to keep:.........$History days"
@@ -796,29 +800,29 @@ If ($Vms.count -ne 0)
     {
         Write-Log -Type Conf -Evt "Logs directory:..........$LogPath."
     }
-    
+
     else {
         Write-Log -Type Conf -Evt "Logs directory:..........No Config"
     }
-    
+
     If ($MailTo)
     {
         Write-Log -Type Conf -Evt "E-mail log to:...........$MailTo."
     }
-    
+
     else {
         Write-Log -Type Conf -Evt "E-mail log to:...........No Config"
     }
-    
+
     If ($MailFrom)
     {
         Write-Log -Type Conf -Evt "E-mail log from:.........$MailFrom."
     }
-    
+
     else {
         Write-Log -Type Conf -Evt "E-mail log from:.........No Config"
     }
-    
+
     If ($MailSubject)
     {
         Write-Log -Type Conf -Evt "E-mail subject:..........$MailSubject."
@@ -831,6 +835,11 @@ If ($Vms.count -ne 0)
     If ($SmtpServer)
     {
         Write-Log -Type Conf -Evt "SMTP server:.............$SmtpServer."
+    }
+
+    If ($SmtpPort)
+    {
+        Write-Log -Type Conf -Evt "SMTP port:...............$SmtpPort."
     }
 
     else {
@@ -1051,16 +1060,16 @@ If ($LogPath)
             ## If it isn't then don't use SSL, but still authenticate with the credentials.
             If ($UseSsl)
             {
-                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -UseSsl -Credential $SmtpCreds
+                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
             }
 
             else {
-                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Credential $SmtpCreds
+                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
             }
         }
 
         else {
-            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer
+            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer  -Port $SmtpPort
         }
     }
 }
