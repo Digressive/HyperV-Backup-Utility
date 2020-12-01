@@ -1069,7 +1069,7 @@ If ($LogPath)
         }
 
         else {
-            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer  -Port $SmtpPort
+            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
         }
     }
 }
