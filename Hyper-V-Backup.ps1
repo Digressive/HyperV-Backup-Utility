@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 20.07.13
+.VERSION 21.05.30
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -14,7 +14,7 @@
 
 .LICENSEURI
 
-.PROJECTURI https://gal.vin/2017/09/18/vm-backup-for-hyper-v
+.PROJECTURI https://gal.vin/posts/vm-backup-for-hyper-v
 
 .ICONURI
 
@@ -74,11 +74,19 @@
     7-Zip must be installed in the default location ($env:ProgramFiles) if it is not found, Windows compression will be used as a fallback.
     
     .PARAMETER SzThreads
-    Configure 7-Zip to use more threads. mmt1 [1 thread] - mmt8 [8 threads].
+    Configure 7-Zip to use more threads. -mmt1 [1 thread] -mmt8 [8 threads].
     Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
 
     .PARAMETER SzComp
-    Configure 7-Zip's compression strength. mx1 [fast compression] - mx9 [ultra compression].
+    Configure 7-Zip's compression strength. -mx1 [fast compression] -mx9 [ultra compression].
+    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
+
+    .PARAMETER SzType
+    Configure which archive type 7-Zip should use. -t7z, -tzip, or -ttar.
+    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
+
+    .PARAMETER SzSplit
+    Configure 7-Zip to split the files into a configurable size. For example: -v100m, -v2g
     Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
 
     .PARAMETER ShortDate
@@ -115,15 +123,14 @@
     Configures the utility to connect to the SMTP server using SSL.
 
     .EXAMPLE
-    Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -Wd E:\temp -NoPerms -Keep 30
-    -Compress -Sz -SzThreads mmt8 -SzComp mx5 -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com
-    -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+    Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -Wd E:\temp -NoPerms -Keep 30 -Compress -Sz
+    -SzThreads -mmt8 -SzComp -mx5 -SzType -t7z -SzSplit -v2g -L C:\scripts\logs -Subject 'Server: Hyper-V Backup'
+    -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
 
-    This will shutdown, one at a time, all the VMs listed in the file located in C:\scripts\vms.txt
-    and back up their files to \\nas\vms, using E:\temp as a working directory. A zip file for each
-    VM folder will be created using 7-zip. 7-zip will use 8 threads and medium compression. Any
-    backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs
-    and sent via e-mail with a custom subject line.
+    This will shutdown, one at a time, all the VMs listed in the file located in C:\scripts\vms.txt and back up
+    their files to \\nas\vms, using E:\temp as a working directory. A .7z file for each VM folder will be created
+    using 7-zip. 7-zip will use 8 threads, medium compression and split the files in 2GB volumes. Any backups older
+    than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a custom subject line.
 #>
 
 ## Set up command line switches.
@@ -143,6 +150,10 @@ Param(
     $SzThreadNo,
     [alias("SzComp")]
     $SzCompL,
+    [alias("SzType")]
+    $SzTypeF,
+    [alias("SzSplit")]
+    $SzSplitF,
     [alias("L")]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $LogPath,
@@ -176,7 +187,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 20.07.13     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.05.30     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -347,11 +358,25 @@ Function OptionsRun
             ## Remove all previous compressed backups, including ones from previous versions of this script.
             If ($ShortDate)
             {
-                Remove-Item "$WorkDir\$Vm-*-*-*.zip" -Force
+                If ($SzSplitF)
+                {
+                    Remove-Item "$WorkDir\$Vm-*-*-*.*.*" -Force
+                }
+                
+                else {
+                    Remove-Item "$WorkDir\$Vm-*-*-*.*" -Force
+                }
             }
 
             else {
-                Remove-Item "$WorkDir\$Vm-*-*-***-*-*.zip" -Force
+                If ($SzSplitF)
+                {
+                    Remove-Item "$WorkDir\$Vm-*-*-*.*.*" -Force
+                }
+                
+                else {
+                    Remove-Item "$WorkDir\$Vm-*-*-***-*-*.*" -Force
+                }
             }
 
             ## If a working directory is configured by the user, remove all previous compressed backups,
@@ -365,11 +390,25 @@ Function OptionsRun
                 {
                     If ($ShortDate)
                     {
-                        Remove-Item "$Backup\$Vm-*-*-*.zip" -Force
+                        If ($SzSplitF)
+                        {
+                            Remove-Item "$Backup\$Vm-*-*-*.*.*" -Force
+                        }
+
+                        else {
+                            Remove-Item "$Backup\$Vm-*-*-*.*" -Force
+                        }
                     }
 
                     else {
-                        Remove-Item "$Backup\$Vm-*-*-***-*-*.zip" -Force
+                        If ($SzSplitF)
+                        {
+                            Remove-Item "$Backup\$Vm-*-*-***-*-*.*.*" -Force
+                        }
+
+                        else {
+                            Remove-Item "$Backup\$Vm-*-*-***-*-*.*" -Force
+                        }
                     }
                 }
             }
@@ -384,11 +423,25 @@ Function OptionsRun
             ## ones from previous versions of this script.
             If ($ShortDate)
             {
-                Get-ChildItem -Path "$WorkDir\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                If ($SzSplitF)
+                {
+                    Get-ChildItem -Path "$WorkDir\$Vm-*-*-*.*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
+
+                else {
+                    Get-ChildItem -Path "$WorkDir\$Vm-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
             }
 
             else {
-                Get-ChildItem -Path "$WorkDir\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                If ($SzSplitF)
+                {
+                    Get-ChildItem -Path "$WorkDir\$Vm-*-*-***-*-*.*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
+
+                else {
+                    Get-ChildItem -Path "$WorkDir\$Vm-*-*-***-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                }
             }
 
             ## If a working directory is configured by the user, remove previous compressed backups older
@@ -402,11 +455,25 @@ Function OptionsRun
                 {
                     If ($ShortDate)
                     {
-                        Get-ChildItem -Path "$Backup\$Vm-*-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        If ($SzSplitF)
+                        {
+                            Get-ChildItem -Path "$Backup\$Vm-*-*-*.*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        }
+
+                        else{
+                            Get-ChildItem -Path "$Backup\$Vm-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        }
                     }
 
                     else {
-                        Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.zip" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        If ($SzSplitF)
+                        {
+                            Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        }
+
+                        else {
+                            Get-ChildItem -Path "$Backup\$Vm-*-*-***-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                        }
                     }
                 }
             }
@@ -423,25 +490,25 @@ Function OptionsRun
 
                 If ($ShortDate)
                 {
-                    $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort).zip")
+                    $ShortDateT = Test-Path -Path ("$WorkDir\$Vm-$(Get-DateShort)")
 
                     If ($ShortDateT)
                     {
                         Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                         $i = 1
-                        $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                        $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
                         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
 
                         If ($ShortDateExistT)
                         {
                             do {
-                                $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                                $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}" -f $i++)
                                 $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
                             } until ($ShortDateExistT -eq $false)
                         }
 
                         try {
-                            & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
                         }
                         catch{
                             $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -449,7 +516,7 @@ Function OptionsRun
                     }
 
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateShort).zip") "$WorkDir\$Vm\*"
+                        & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$Vm-$(Get-DateShort)") "$WorkDir\$Vm\*"
                     }
                     catch{
                         $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -458,7 +525,7 @@ Function OptionsRun
 
                 else {
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" -$SzThreadNo -$SzCompL -bso0 a -tzip ("$WorkDir\$Vm-$(Get-DateLong).zip") "$WorkDir\$Vm\*"
+                        & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$Vm-$(Get-DateLong)") "$WorkDir\$Vm\*"
                     }
                     catch{
                         $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -753,14 +820,9 @@ If ($Vms.count -ne 0)
         $WorkDir = "$Backup"
     }
 
-    If ($Null -eq $SzThreadNo)
+    If ($Null -eq $SzTypeF)
     {
-        $SzThreadNo = "mmt1"
-    }
-
-    If ($Null -eq $SzCompL)
-    {
-        $SzCompL = "mx1"
+        $SzTypeF = "-tzip"
     }
 
     If ($Null -eq $ShortDate)
@@ -860,8 +922,24 @@ If ($Vms.count -ne 0)
     Write-Log -Type Conf -Evt "-ShortDate switch:.......$ShortDate."
     Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
     Write-Log -Type Conf -Evt "-Sz switch:..............$Sz."
-    Write-Log -Type Conf -Evt "7-zip threads:...........$SzThreadNo."
-    Write-Log -Type Conf -Evt "7-zip compression:.......$SzCompL."
+
+    If ($Null -eq $SzThreadNo)
+    {
+        Write-Log -Type Conf -Evt "7-zip threads:...........No Config."
+    }
+
+    If ($Null -eq $SzCompL)
+    {
+        Write-Log -Type Conf -Evt "7-zip compression:.......No Config."
+    }
+
+    Write-Log -Type Conf -Evt "7-zip archive type:......$SzTypeF."
+
+    If ($Null -eq $SzSplitF)
+    {
+        Write-Log -Type Conf -Evt "7-zip split file size:...No Config"
+    }
+
     Write-Log -Type Conf -Evt "************************************************************"
     Write-Log -Type Info -Evt "Process started."
     ##
