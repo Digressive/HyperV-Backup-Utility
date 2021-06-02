@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.05.30
+.VERSION 21.06.02
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -187,7 +187,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.05.30     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.06.02     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -647,25 +647,25 @@ Function OptionsRun
 
             If ($ShortDate)
             {
-                $ShortDateT = Test-Path -Path ("$Backup\$Vm-$(Get-DateShort).zip")
+                $ShortDateT = Test-Path -Path ("$Backup\$Vm-$(Get-DateShort).*")
 
                 If ($ShortDateT)
                 {
                     Write-Log -Type Info -Evt "File $Vm-$(Get-DateShort) already exists, appending number"
                     $i = 1
-                    $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                    $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.*" -f $i++)
                     $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
 
                     If ($ShortDateExistT)
                     {
                         do {
-                            $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                            $ShortDateNN = ("$Vm-$(Get-DateShort)-{0:D3}.*" -f $i++)
                             $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
                         } until ($ShortDateExistT -eq $false)
                     }
 
                     try {
-                        Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup\$ShortDateNN
+                        Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.*" | Move-Item -Destination $Backup\$ShortDateNN
                     }
                     catch{
                         $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -673,7 +673,7 @@ Function OptionsRun
                 }
 
                 try {
-                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.zip" | Move-Item -Destination $Backup
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*.*" | Move-Item -Destination $Backup
                 }
                 catch{
                     $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -682,7 +682,7 @@ Function OptionsRun
 
             else {
                 try {
-                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.zip" | Move-Item -Destination $Backup
+                    Get-ChildItem -Path $WorkDir -Filter "$Vm-*-*-*-*-*.*" | Move-Item -Destination $Backup
                 }
                 catch{
                     $_.Exception.Message | Write-Log -Type Err -Evt $_
