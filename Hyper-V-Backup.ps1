@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.06.02
+.VERSION 21.06.14
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -10,7 +10,7 @@
 
 .COPYRIGHT (C) Mike Galvin. All rights reserved.
 
-.TAGS Hyper-V Virtual Machines Full Backup Export Permissions Zip History
+.TAGS Hyper-V Virtual Machines Full Backup Export Permissions Zip History 7-Zip
 
 .LICENSEURI
 
@@ -73,21 +73,9 @@
     Configure the utility to use 7-Zip to compress the VM backups.
     7-Zip must be installed in the default location ($env:ProgramFiles) if it is not found, Windows compression will be used as a fallback.
     
-    .PARAMETER SzThreads
-    Configure 7-Zip to use more threads. -mmt1 [1 thread] -mmt8 [8 threads].
-    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
-
-    .PARAMETER SzComp
-    Configure 7-Zip's compression strength. -mx1 [fast compression] -mx9 [ultra compression].
-    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
-
-    .PARAMETER SzType
-    Configure which archive type 7-Zip should use. -t7z, -tzip, or -ttar.
-    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
-
-    .PARAMETER SzSplit
-    Configure 7-Zip to split the files into a configurable size. For example: -v100m, -v2g
-    Please note this switch is passed through to 7-Zip. See 7-Zip help for more information.
+    .PARAMETER SzOptions
+    Use this option to configure options for 7-Zip. The switches must be comma separated and surrounded by single quotes.
+    For example, archive type, split files, password protection would be '-t7z,-v2G,-ppassword'
 
     .PARAMETER ShortDate
     Configure the script to use only the Year, Month and Day in backup filenames.
@@ -124,7 +112,7 @@
 
     .EXAMPLE
     Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -Wd E:\temp -NoPerms -Keep 30 -Compress -Sz
-    -SzThreads -mmt8 -SzComp -mx5 -SzType -t7z -SzSplit -v2g -L C:\scripts\logs -Subject 'Server: Hyper-V Backup'
+    -SzOptions '-t7z,-v2g,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup'
     -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
 
     This will shutdown, one at a time, all the VMs listed in the file located in C:\scripts\vms.txt and back up
@@ -146,14 +134,8 @@ Param(
     $VmList,
     [alias("Wd")]
     $WorkDir,
-    [alias("SzThreads")]
-    $SzThreadNo,
-    [alias("SzComp")]
-    $SzCompL,
-    [alias("SzType")]
-    $SzTypeF,
-    [alias("SzSplit")]
-    $SzSplitF,
+    [alias("SzOptions")]
+    $SzSwitches,
     [alias("L")]
     [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $LogPath,
@@ -187,7 +169,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.06.02     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.06.14     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -508,7 +490,7 @@ Function OptionsRun
                         }
 
                         try {
-                            & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
                         }
                         catch{
                             $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -516,7 +498,7 @@ Function OptionsRun
                     }
 
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$Vm-$(Get-DateShort)") "$WorkDir\$Vm\*"
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$Vm-$(Get-DateShort)") "$WorkDir\$Vm\*"
                     }
                     catch{
                         $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -525,7 +507,7 @@ Function OptionsRun
 
                 else {
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" $SzThreadNo $SzCompL $SzTypeF $SzSplitF -bso0 a ("$WorkDir\$Vm-$(Get-DateLong)") "$WorkDir\$Vm\*"
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$Vm-$(Get-DateLong)") "$WorkDir\$Vm\*"
                     }
                     catch{
                         $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -820,14 +802,14 @@ If ($Vms.count -ne 0)
         $WorkDir = "$Backup"
     }
 
-    If ($Null -eq $SzTypeF)
-    {
-        $SzTypeF = "-tzip"
-    }
-
     If ($Null -eq $ShortDate)
     {
         $ShortDate = "$LongDate"
+    }
+
+    If ($Null -ne $SzSwitches)
+    {
+        $SzSwSplit = $SzSwitches.split(",")
     }
 
     ##
@@ -923,21 +905,13 @@ If ($Vms.count -ne 0)
     Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
     Write-Log -Type Conf -Evt "-Sz switch:..............$Sz."
 
-    If ($Null -eq $SzThreadNo)
+    If ($SzSwitches)
     {
-        Write-Log -Type Conf -Evt "7-zip threads:...........No Config."
+        Write-Log -Type Conf -Evt "7-zip Options:...........$SzSwitches."
     }
-
-    If ($Null -eq $SzCompL)
-    {
-        Write-Log -Type Conf -Evt "7-zip compression:.......No Config."
-    }
-
-    Write-Log -Type Conf -Evt "7-zip archive type:......$SzTypeF."
-
-    If ($Null -eq $SzSplitF)
-    {
-        Write-Log -Type Conf -Evt "7-zip split file size:...No Config"
+    
+    else {
+        Write-Log -Type Conf -Evt "7-zip Options:...........No Config."
     }
 
     Write-Log -Type Conf -Evt "************************************************************"
