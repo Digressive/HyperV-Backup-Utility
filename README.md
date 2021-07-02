@@ -10,7 +10,7 @@ Flexible Hyper-V Backup Utility
 | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |
 |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |
          __/ | |                                                  | |                            __/ |
-        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.06.14     |___/
+        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.07.02     |___/
 ```
 
 For full instructions and documentation, [visit my site.](https://gal.vin/posts/vm-backup-for-hyper-v)
@@ -40,7 +40,11 @@ Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
 
 This utility has been tested on Windows 10, Windows Server 2019 and Windows Server 2016 (Datacenter and Core Installations) with PowerShell 5.0.
 
-### When you should use the -NoPerms switch
+### 7-Zip support
+
+I've implemented support for 7-Zip into the script. You should be able to use any option that 7-zip supports, although currently the only options I've tested fully are '-t' archive type, '-p' password and '-v' split files.
+
+### When to use the -NoPerms switch
 
 The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host cannot be given the required permissions to run a regular export to a remote device such as a NAS device.
 
@@ -65,7 +69,7 @@ Here’s a list of all the command line switches and example configurations.
 
 | Command Line Switch | Description | Example |
 | ------------------- | ----------- | ------- |
-| -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. Do not add a trailing backslash. | \\\nas\Backups OR E:\Backups |
+| -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. Do not add a trailing backslash. | \\\server\vm-backup OR E:\Backups |
 | -List | Enter the path to a txt file with a list of Hyper-V VM names to backup. If this option is not configured, all running VMs will be backed up. | C:\scripts\vms.txt |
 | -Wd | The path to the working directory to use for the backup before copying it to the final backup directory. Use a directory on local fast media to improve performance. | C:\temp |
 | -NoPerms | Configures the utility to shut down the running VM(s) to do the file-copy based backup instead of using the Hyper-V export function. If no list is specified and multiple VMs are running, the process will run through the VMs alphabetically. | N/A |
@@ -87,7 +91,7 @@ Here’s a list of all the command line switches and example configurations.
 ### Example
 
 ``` txt
-Hyper-V-Backup.ps1 -BackupTo \\server\vm-backup -List C:\scripts\vms.txt -Wd E:\temp -Keep 30 -Compress -Sz -SzOptions '-t7z,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+Hyper-V-Backup.ps1 -BackupTo \\server\vm-backup -List C:\scripts\vms.txt -Wd C:\temp -Keep 30 -Compress -Sz -SzOptions '-t7z,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User me@contoso.com -Pwd C:\foo\pwd.txt -UseSsl
 ```
 
-This example would perform a live export of all the VMs listed in the file located in C:\scripts\vms.txt and back up their files to \\nas\vms, using E:\temp as a working directory. A .7z file for each VM folder will be created using 7-zip. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a custom subject line.
+This example would perform a live export of all the VMs listed in the file located in C:\scripts\vms.txt and back up their files to \\server\vm-backup, using C:\temp as a working directory. A .7z file for each VM folder will be created using 7-zip. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a custom subject line.
