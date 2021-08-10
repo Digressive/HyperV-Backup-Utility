@@ -1,3 +1,4 @@
 VMName1
 Web01
 WSUS01
+File-Server.Domain.com
