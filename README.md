@@ -10,7 +10,7 @@ Flexible Hyper-V Backup Utility
 | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |
 |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |
          __/ | |                                                  | |                            __/ |
-        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.07.02     |___/
+        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.08.10     |___/
 ```
 
 For full instructions and documentation, [visit my site.](https://gal.vin/posts/vm-backup-for-hyper-v)
@@ -26,7 +26,7 @@ Hyper-V Backup Utility can also be downloaded from:
 
 * [The Microsoft PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
 
-Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
+Join the [Discord](discord.gg/QtrQE3y) or Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
 
 -Mike
 
@@ -84,6 +84,7 @@ Here’s a list of all the command line switches and example configurations.
 | -SendTo | The e-mail address the log should be sent to. | me@contoso.com |
 | -From | The e-mail address the log should be sent from. | HyperV@contoso.com |
 | -Smtp | The DNS name or IP address of the SMTP server. | smtp.live.com OR smtp.office365.com |
+| -Port | The Port that should be used for the SMTP server. If none is specified then the default of 25 will be used. | 587 |
 | -User | The user account to authenticate to the SMTP server. | example@contoso.com |
 | -Pwd | The txt file containing the encrypted password for SMTP authentication. | C:\scripts\ps-script-pwd.txt |
 | -UseSsl | Configures the utility to connect to the SMTP server using SSL. | N/A |
@@ -91,7 +92,7 @@ Here’s a list of all the command line switches and example configurations.
 ### Example
 
 ``` txt
-Hyper-V-Backup.ps1 -BackupTo \\server\vm-backup -List C:\scripts\vms.txt -Wd C:\temp -Keep 30 -Compress -Sz -SzOptions '-t7z,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User me@contoso.com -Pwd C:\foo\pwd.txt -UseSsl
+Hyper-V-Backup.ps1 -BackupTo \\server\vm-backup -List C:\scripts\vms.txt -Wd C:\temp -Keep 30 -Compress -Sz -SzOptions '-t7z,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User me@contoso.com -Pwd C:\scripts\ps-script-pwd.txt -UseSsl
 ```
 
 This example would perform a live export of all the VMs listed in the file located in C:\scripts\vms.txt and back up their files to \\server\vm-backup, using C:\temp as a working directory. A .7z file for each VM folder will be created using 7-zip. Any backups older than 30 days will also be deleted. The log file will be output to C:\scripts\logs and sent via e-mail with a custom subject line.

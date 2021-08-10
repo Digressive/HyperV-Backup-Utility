@@ -1,10 +1,10 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.07.02
+.VERSION 21.08.10
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
-.AUTHOR Mike Galvin Contact: mike@gal.vin / twitter.com/mikegalvin_
+.AUTHOR Mike Galvin Contact: mike@gal.vin / twitter.com/mikegalvin_ / discord.gg/5ZsnJ5k
 
 .COMPANYNAME Mike Galvin
 
@@ -41,7 +41,7 @@
     To create the password file run this command as the user and on the machine that will use the file:
 
     $creds = Get-Credential
-    $creds.Password | ConvertFrom-SecureString | Set-Content c:\foo\ps-script-pwd.txt
+    $creds.Password | ConvertFrom-SecureString | Set-Content C:\scripts\ps-script-pwd.txt
 
     .PARAMETER BackupTo
     The path the virtual machines should be backed up to.
@@ -101,6 +101,9 @@
     .PARAMETER Smtp
     The DNS name or IP address of the SMTP server.
 
+    .PARAMETER Port
+    The Port that should be used for the SMTP server.
+
     .PARAMETER User
     The user account to authenticate to the SMTP server.
 
@@ -113,7 +116,7 @@
     .EXAMPLE
     Hyper-V-Backup.ps1 -BackupTo \\nas\vms -List C:\scripts\vms.txt -Wd E:\temp -NoPerms -Keep 30 -Compress -Sz
     -SzOptions '-t7z,-v2g,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com
-    -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\foo\pwd.txt -UseSsl
+    -From hyperv@contoso.com -Smtp smtp.outlook.com -User user -Pwd C:\scripts\ps-script-pwd.txt -UseSsl
 
     This will shutdown, one at a time, all the VMs listed in the file located in C:\scripts\vms.txt and back up
     their files to \\nas\vms, using E:\temp as a working directory. A .7z file for each VM folder will be created using
@@ -147,6 +150,8 @@ Param(
     $MailFrom,
     [alias("Smtp")]
     $SmtpServer,
+    [alias("Port")]
+    $SmtpPort,
     [alias("User")]
     $SmtpUser,
     [alias("Pwd")]
@@ -169,7 +174,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.07.02     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.08.10     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -909,6 +914,15 @@ If ($Vms.count -ne 0)
         Write-Log -Type Conf -Evt "SMTP server:.............No Config"
     }
 
+    If ($SmtpPort)
+    {
+        Write-Log -Type Conf -Evt "SMTP Port:...............$SmtpPort."
+    }
+
+    else {
+        Write-Log -Type Conf -Evt "SMTP Port:...............Default"
+    }
+
     If ($SmtpUser)
     {
         Write-Log -Type Conf -Evt "SMTP user:...............$SmtpUser."
@@ -1137,6 +1151,12 @@ If ($LogPath)
             $MailSubject = "Hyper-V Backup Utility Log"
         }
 
+        ## Default Smtp Port if none is configured.
+        If ($Null -eq $SmtpPort)
+        {
+            $SmtpPort = "25"
+        }
+
         ## Setting the contents of the log to be the e-mail body.
         $MailBody = Get-Content -Path $Log | Out-String
 
@@ -1151,16 +1171,16 @@ If ($LogPath)
             ## If it isn't then don't use SSL, but still authenticate with the credentials.
             If ($UseSsl)
             {
-                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -UseSsl -Credential $SmtpCreds
+                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
             }
 
             else {
-                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Credential $SmtpCreds
+                Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
             }
         }
 
         else {
-            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer
+            Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
         }
     }
     ## End of Email block
