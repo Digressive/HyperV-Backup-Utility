@@ -26,7 +26,7 @@ Hyper-V Backup Utility can also be downloaded from:
 
 * [The Microsoft PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
 
-Join the [Discord](discord.gg/QtrQE3y) or Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
+Join the [Discord](http://discord.gg/5ZsnJ5k) or Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
 
 -Mike
 
