@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.08.10
+.VERSION 21.10.26
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -174,7 +174,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.08.10     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.10.26     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -271,10 +271,20 @@ Function OptionsRun
         ## Remove all previous backup folders
         If ($ShortDate)
         {
+            ## report old files to remove
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+            ## remove old files
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
         }
 
         else {
+            ## report old files to remove
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+            ## remove old files
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
         }
 
@@ -288,10 +298,20 @@ Function OptionsRun
             {
                 If ($ShortDate)
                 {
+                    ## report old files to remove
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                    ## remove old files
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
                 }
 
                 else {
+                    ## report old files to remove
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                    ## remove old files
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
                 }
             }
@@ -307,10 +327,20 @@ Function OptionsRun
             ## Remove previous backup folders older than the configured number of days.
             If ($ShortDate)
             {
+                ## report old files to remove
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                ## remove old files
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
             }
 
             else {
+                ## report old files to remove
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                ## remove old files
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
             }
 
@@ -324,10 +354,20 @@ Function OptionsRun
                 {
                     If ($ShortDate)
                     {
+                        ## report old files to remove
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                        ## remove old files
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                     }
 
                     else {
+                        ## report old files to remove
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                        ## remove old files
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                     }
                 }
@@ -380,10 +420,20 @@ Function OptionsRun
             ## Remove previous compressed backups older than the configured number of days.
             If ($ShortDate)
             {
+                ## report old files to remove
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                ## remove old files
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
             }
 
             else {
+                ## report old files to remove
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                ## remove old files
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
             }
 
@@ -397,10 +447,26 @@ Function OptionsRun
                 {
                     If ($ShortDate)
                     {
+                        ## old code
+                        #Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+
+                        #Write-Log -Type Info -Evt "The following backups were removed 2short:"
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                        ## remove old files
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                     }
 
                     else {
+                        ## old code
+                        #Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+
+                        #Write-Log -Type Info -Evt "The following backups were removed 2long:"
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+
+                        ## remove old files
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                     }
                 }
