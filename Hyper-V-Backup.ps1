@@ -447,10 +447,7 @@ Function OptionsRun
                 {
                     If ($ShortDate)
                     {
-                        ## old code
-                        #Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
-
-                        #Write-Log -Type Info -Evt "The following backups were removed 2short:"
+                        ## report old files to remove
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
@@ -459,10 +456,7 @@ Function OptionsRun
                     }
 
                     else {
-                        ## old code
-                        #Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
-
-                        #Write-Log -Type Info -Evt "The following backups were removed 2long:"
+                        ## report old files to remove
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
