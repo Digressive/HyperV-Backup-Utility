@@ -273,7 +273,7 @@ Function OptionsRun
         {
             ## report old files to remove
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory
-            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
             ## remove old files
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
@@ -282,7 +282,7 @@ Function OptionsRun
         else {
             ## report old files to remove
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory
-            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
             ## remove old files
             Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
@@ -300,7 +300,7 @@ Function OptionsRun
                 {
                     ## report old files to remove
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory
-                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                     ## remove old files
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
@@ -309,7 +309,7 @@ Function OptionsRun
                 else {
                     ## report old files to remove
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory
-                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                     ## remove old files
                     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
@@ -329,7 +329,7 @@ Function OptionsRun
             {
                 ## report old files to remove
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                 ## remove old files
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
@@ -338,7 +338,7 @@ Function OptionsRun
             else {
                 ## report old files to remove
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                 ## remove old files
                 Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
@@ -356,7 +356,7 @@ Function OptionsRun
                     {
                         ## report old files to remove
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                         ## remove old files
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
@@ -365,7 +365,7 @@ Function OptionsRun
                     else {
                         ## report old files to remove
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                         ## remove old files
                         Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
@@ -422,7 +422,7 @@ Function OptionsRun
             {
                 ## report old files to remove
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                 ## remove old files
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
@@ -431,7 +431,7 @@ Function OptionsRun
             else {
                 ## report old files to remove
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                 ## remove old files
                 Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
@@ -449,7 +449,7 @@ Function OptionsRun
                     {
                         ## report old files to remove
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                         ## remove old files
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
@@ -458,7 +458,7 @@ Function OptionsRun
                     else {
                         ## report old files to remove
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Where-Object CreationTime –lt (Get-Date).AddDays(-$History)
-                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, LastWriteTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
 
                         ## remove old files
                         Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime –lt (Get-Date).AddDays(-$History) | Remove-Item -Force
