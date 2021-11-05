@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.10.28
+.VERSION 21.11.05
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -140,7 +140,6 @@ Param(
     [alias("SzOptions")]
     $SzSwitches,
     [alias("L")]
-    [ValidateScript({Test-Path $_ -PathType 'Container'})]
     $LogPath,
     [alias("Subject")]
     $MailSubject,
@@ -174,7 +173,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.10.28     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.11.05     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
     Write-Host ""
 }
@@ -183,6 +182,14 @@ If ($NoBanner -eq $False)
 ## If the log file already exists, clear it.
 If ($LogPath)
 {
+    ## Make sure the log directory exists.
+    $LogPathFolderT = Test-Path $LogPath
+
+    If ($LogPathFolderT -eq $False)
+    {
+        New-Item $LogPath -ItemType Directory -Force | Out-Null
+    }
+
     $LogFile = ("Hyper-V-Backup_{0:yyyy-MM-dd_HH-mm-ss}.log" -f (Get-Date))
     $Log = "$LogPath\$LogFile"
 
@@ -380,7 +387,7 @@ Function OptionsRun
     {
         If ($Null -eq $History)
         {
-            Write-Log -Type Info -Evt "Removing all previous compressed backups"
+            Write-Log -Type Info -Evt "Removing all previous compressed backups for $Vm"
 
             ## Remove all previous compressed backups
             If ($ShortDate)
@@ -740,11 +747,8 @@ Function OptionsRun
 
             ## Move with long date
             else {
-                $BackupFile = Get-ChildItem -Path ("$WorkDir\$VmFixed-$(Get-DateLong).*") -File
-                $BackupFileN = $BackupFile.name
-
                 try {
-                    Get-ChildItem -Path $WorkDir -Filter $BackupFileN | Move-Item -Destination $Backup -ErrorAction 'Stop'
+                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*.*" | Move-Item -Destination $Backup -ErrorAction 'Stop'
                 }
                 catch{
                     $_.Exception.Message | Write-Log -Type Err -Evt $_
@@ -869,6 +873,12 @@ Function OptionsRun
 ## Setting an easier to use variable for computer name of the Hyper-V server.
 $Vs = $Env:ComputerName
 
+## getting Windows Version info
+$OSVMaj = [environment]::OSVersion.Version | Select-Object -expand major
+$OSVMin = [environment]::OSVersion.Version | Select-Object -expand minor
+$OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
+$OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
+
 ## If a VM list file is configured, get the content of the file, otherwise just get the running VMs.
 If ($VmList)
 {
@@ -909,7 +919,8 @@ If ($Vms.count -ne 0)
     ##
 
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "This virtual host:.......$Vs."
+    Write-Log -Type Conf -Evt "Hostname:................$Vs."
+    Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
     Write-Log -Type Conf -Evt "VMs to backup:..........."
 
     ForEach ($Vm in $Vms)
@@ -1063,10 +1074,11 @@ If ($Vms.count -ne 0)
             Stop-VM $Vm
 
             ##
-            ## Copy the VM config files and test for success or failure.
+            ## Copy the VM config files and log if there is an error.
             ##
 
             try {
+                Write-Log -Type Info -Evt "Copying config files"
                 Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
                 Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
             }
@@ -1079,10 +1091,11 @@ If ($Vms.count -ne 0)
             ##
 
             ##
-            ## Copy the VHDs and test for success or failure.
+            ## Copy the VHDs and log if there is an error.
             ##
 
             try {
+                Write-Log -Type Info -Evt "Copying VHD files"
                 Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
             }
             catch{
@@ -1099,10 +1112,11 @@ If ($Vms.count -ne 0)
             ForEach ($Snap in $Snaps)
             {
                 ##
-                ## Copy the snapshot config files and test for success or failure.
+                ## Copy the snapshot config files and log if there is an error.
                 ##
 
                 try {
+                    Write-Log -Type Info -Evt "Copying Snapshot config files"
                     Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                     Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                 }
@@ -1116,6 +1130,7 @@ If ($Vms.count -ne 0)
 
                 ## Copy the snapshot root VHD.
                 try {
+                    Write-Log -Type Info -Evt "Copying Snapshot root VHD files"
                     Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force -ErrorAction 'Stop'
                 }
                 catch{
@@ -1123,8 +1138,8 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            Start-VM $Vm
             Write-Log -Type Info -Evt "Starting VM: $Vm"
+            Start-VM $Vm
             Start-Sleep -S 60
             OptionsRun
         }
@@ -1167,8 +1182,8 @@ If ($Vms.count -ne 0)
             ## For 7zip, replace . dots with - hyphens in the vm name
             $VmFixed = $Vm.replace(".","-")
 
-            Write-Log -Type Info -Evt "Attempting to export $Vm"
             try {
+                Write-Log -Type Info -Evt "Attempting to export $Vm"
                 $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
             }
             catch{
