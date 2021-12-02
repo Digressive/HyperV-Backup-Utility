@@ -13,7 +13,7 @@ Flexible Hyper-V Backup Utility
         |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.11.09     |___/
 ```
 
-For full instructions and documentation, [visit my site.](https://gal.vin/posts/vm-backup-for-hyper-v)
+For full change log and more information, [visit my site.](https://gal.vin/posts/vm-backup-for-hyper-v)
 
 A demonstration video is available on [my YouTube channel.](https://youtu.be/q_U40ZZs9ag)
 
