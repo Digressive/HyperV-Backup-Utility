@@ -174,7 +174,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.12.28     |___/   "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "                                                                                                          "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "                       Donate: https://www.paypal.me/digressive                                           "
     Write-Host ""
 }
 
