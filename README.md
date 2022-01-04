@@ -2,17 +2,6 @@
 
 Flexible Hyper-V Backup Utility
 
-``` txt
- _    _                    __      __  ____             _                  _    _ _   _ _ _ _
-| |  | |                   \ \    / / |  _ \           | |                | |  | | | (_) (_) |
-| |__| |_   _ _ __   ___ _ _\ \  / /  | |_) | __ _  ___| | ___   _ _ __   | |  | | |_ _| |_| |_ _   _
-|  __  | | | | '_ \ / _ \ '__\ \/ /   |  _ < / _  |/ __| |/ / | | | '_ \  | |  | | __| | | | __| | | |
-| |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |
-|_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |
-         __/ | |                                                  | |                            __/ |
-        |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.12.28     |___/
-```
-
 For full change log and more information, [visit my site.](https://gal.vin/posts/vm-backup-for-hyper-v)
 
 A demonstration video is available on [my YouTube channel.](https://youtu.be/q_U40ZZs9ag)
