@@ -14,7 +14,7 @@
 
 .LICENSEURI
 
-.PROJECTURI https://gal.vin/posts/vm-backup-for-hyper-v
+.PROJECTURI https://gal.vin/utils/hyperv-backup-utility/
 
 .ICONURI
 
