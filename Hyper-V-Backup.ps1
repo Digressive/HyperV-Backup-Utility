@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 21.12.28
+.VERSION 22.01.19
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -173,7 +173,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 21.12.28     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.01.19     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                       Donate: https://www.paypal.me/digressive                                           "
     Write-Host ""
 }
@@ -266,6 +266,9 @@ Function Write-Log($Type, $Evt)
 
 Function OptionsRun
 {
+    ## For 7zip, replace . dots with - hyphens in the vm name
+    $VmFixed = $Vm.replace(".","-")
+
     ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
     If ($Null -eq $History -And $Compress -eq $False)
     {
@@ -494,7 +497,7 @@ Function OptionsRun
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
                         }
-                        catch{
+                        catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                         }
                     }
@@ -504,7 +507,7 @@ Function OptionsRun
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
                         }
-                        catch{
+                        catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                         }
                     }
@@ -533,7 +536,7 @@ Function OptionsRun
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
                         }
-                        catch{
+                        catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                         }
                     }
@@ -542,7 +545,7 @@ Function OptionsRun
                     try {
                         & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
                     }
-                    catch{
+                    catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     }
                 }
@@ -553,7 +556,7 @@ Function OptionsRun
                 try {
                     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -588,7 +591,7 @@ Function OptionsRun
                     try {
                         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
                     }
-                    catch{
+                    catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     }
                 }
@@ -597,7 +600,7 @@ Function OptionsRun
                     try {
                         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
                     }
-                    catch{
+                    catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     }
                 }
@@ -607,7 +610,7 @@ Function OptionsRun
                 try {
                     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -656,7 +659,7 @@ Function OptionsRun
                             try {
                                 Get-ChildItem -Path $SplitFile | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                             }
-                            catch{
+                            catch {
                                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                             }
                         }
@@ -665,7 +668,7 @@ Function OptionsRun
                             try {
                                 Get-ChildItem -Path $SplitFile | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                             }
-                            catch{
+                            catch {
                                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                             }
                         }
@@ -716,7 +719,7 @@ Function OptionsRun
                         try {
                             Get-ChildItem -Path $BackupFile | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                         }
-                        catch{
+                        catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                         }
                     }
@@ -725,7 +728,7 @@ Function OptionsRun
                     try {
                         Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*.*" | Move-Item -Destination $Backup -ErrorAction 'Stop'
                     }
-                    catch{
+                    catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     }
                 }
@@ -736,7 +739,7 @@ Function OptionsRun
                 try {
                     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*.*" | Move-Item -Destination $Backup -ErrorAction 'Stop'
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -768,7 +771,7 @@ Function OptionsRun
                 try {
                     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -776,7 +779,7 @@ Function OptionsRun
             try {
                 Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$VmFixed-$(Get-DateShort)")
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
             }
         }
@@ -785,7 +788,7 @@ Function OptionsRun
             try {
                 Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$VmFixed-$(Get-DateLong)")
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
             }
         }
@@ -824,7 +827,7 @@ Function OptionsRun
                     try {
                         Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                     }
-                    catch{
+                    catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     }
                 }
@@ -833,7 +836,7 @@ Function OptionsRun
                 try {
                     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination ("$Backup\$VmFixed-$(Get-DateShort)") -ErrorAction 'Stop'
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -843,7 +846,7 @@ Function OptionsRun
                 try {
                     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Move-Item -Destination ("$Backup\$VmFixed-$(Get-DateLong)") -ErrorAction 'Stop'
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 }
             }
@@ -864,9 +867,10 @@ $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
 $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
 
 ## If a VM list file is configured, get the content of the file, otherwise just get the running VMs.
+## Clean list if it has empty lines.
 If ($VmList)
 {
-    $Vms = Get-Content $VmList
+    $Vms = Get-Content $VmList | Where-Object {$_.trim() -ne ""}
 }
 
 else {
@@ -902,8 +906,8 @@ If ($Vms.count -ne 0)
     ## Display the current config and log if configured.
     ##
 
-    Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "Utility Version:.........21.12.28"
+    Write-Log -Type Conf -Evt "************ Running with the following config *************"
+    Write-Log -Type Conf -Evt "Utility Version:.........22.01.19"
     Write-Log -Type Conf -Evt "Hostname:................$Vs."
     Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
     Write-Log -Type Conf -Evt "VMs to backup:..........."
@@ -1033,9 +1037,7 @@ If ($Vms.count -ne 0)
     {
         ForEach ($Vm in $Vms)
         {
-            ## For 7zip, replace . dots with - hyphens in the vm name
-            $VmFixed = $Vm.replace(".","-")
-            $VmInfo = Get-VM -name $Vm
+            $VmInfo = Get-VM -Name $Vm
             $BackupSucc = $false
 
             ## Test for the existence of a previous VM export. If it exists, delete it.
@@ -1052,7 +1054,7 @@ If ($Vms.count -ne 0)
                 New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
                 $BackupSucc = $true
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 $BackupSucc = $false
             }
@@ -1072,6 +1074,18 @@ If ($Vms.count -ne 0)
             ## Copy the VM config files and log if there is an error.
             ##
 
+            #Check for VM being in the correct state before continuing
+
+            $VmState = Get-Vm -Name $Vm
+
+            If ($VmState.State -ne 'Off' -OR $VmState.Status -ne 'Operating normally')
+            {
+                do {
+                    Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
+                    Start-Sleep -S 60
+                } until ($VmState.State -eq 'Off' -AND $VmState.Status -eq 'Operating normally')
+            }
+
             try {
                 $BackupSucc = $false
                 Write-Log -Type Info -Evt "(VM:$Vm) Copying config files"
@@ -1079,7 +1093,7 @@ If ($Vms.count -ne 0)
                 Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
                 $BackupSucc = $true
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 $BackupSucc = $false
             }
@@ -1098,7 +1112,7 @@ If ($Vms.count -ne 0)
                 Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
                 $BackupSucc = $true
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 $BackupSucc = $false
             }
@@ -1123,7 +1137,7 @@ If ($Vms.count -ne 0)
                     Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                     $BackupSucc = $true
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     $BackupSucc = $false
                 }
@@ -1139,7 +1153,7 @@ If ($Vms.count -ne 0)
                     Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force -ErrorAction 'Stop'
                     $BackupSucc = $true
                 }
-                catch{
+                catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     $BackupSucc = $false
                 }
@@ -1153,6 +1167,7 @@ If ($Vms.count -ne 0)
                 Start-Sleep -S 60
                 OptionsRun
             }
+
             else {
                 Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
                 Start-Sleep -S 60
@@ -1172,19 +1187,16 @@ If ($Vms.count -ne 0)
     else {
         ForEach ($Vm in $Vms)
         {
-            ## For 7zip, replace . dots with - hyphens in the vm name
-            $VmFixed = $Vm.replace(".","-")
-
-            If (Test-Path "$WorkDir\$VmFixed")
+            If (Test-Path "$WorkDir\$Vm")
             {
-                Remove-Item "$WorkDir\$VmFixed" -Recurse -Force
+                Remove-Item "$WorkDir\$Vm" -Recurse -Force
             }
 
             If ($WorkDir -ne $Backup)
             {
-                If (Test-Path -Path "$Backup\$VmFixed")
+                If (Test-Path -Path "$Backup\$Vm")
                 {
-                    Remove-Item "$Backup\$VmFixed" -Recurse -Force
+                    Remove-Item "$Backup\$Vm" -Recurse -Force
                 }
             }
         }
@@ -1192,15 +1204,22 @@ If ($Vms.count -ne 0)
         ## Do a regular export of the VMs.
         ForEach ($Vm in $Vms)
         {
-            ## For 7zip, replace . dots with - hyphens in the vm name
-            $VmFixed = $Vm.replace(".","-")
-
             try {
                 Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
                 $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
-                OptionsRun
+
+                $BackupCurrent = Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Where {([datetime]::now.Date -eq $_.LastWriteTime.Date)}
+
+                If ($BackupCurrent -ne $null)
+                {
+                    OptionsRun
+                }
+                
+                else {
+                    Write-Log -Type Err -Evt "(VM:$Vm) No recent backup found. Skipping options."
+                }
             }
-            catch{
+            catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                 Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
             }

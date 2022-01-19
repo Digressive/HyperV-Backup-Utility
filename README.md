@@ -21,12 +21,12 @@ Join the [Discord](http://discord.gg/5ZsnJ5k) or Tweet me if you have questions:
 
 ## Features and Requirements
 
-* It's designed to be run on a Hyper-V host.
+* The utility is designed to be run on a Hyper-V host.
 * The Hyper-V host must have the Hyper-V management PowerShell modules installed.
-* A leading feature is that the utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export.
-* The utility can be used to backup VMs from Hyper-V hosts in a cluster configuration.
+* The utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export to.
+* The utility supports Hyper-V hosts in a clustered configuration.
 * The utility requires at least Windows PowerShell 5.0
-* This utility has been tested on Windows 10, Windows Server 2019 and Windows Server 2016 (Datacenter and Core Installations).
+* The utility has been tested on Windows 10, Windows Server 2019 and Windows Server 2016 (Datacenter and Core Installations).
 
 ### 7-Zip support
 
