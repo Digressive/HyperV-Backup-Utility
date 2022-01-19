@@ -267,6 +267,7 @@ Function Write-Log($Type, $Evt)
 Function OptionsRun
 {
     ## For 7zip, replace . dots with - hyphens in the vm name
+    $BackupSucc = $false
     $VmFixed = $Vm.replace(".","-")
 
     ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
@@ -496,9 +497,11 @@ Function OptionsRun
                         ## 7-zip compression with shortdate configured and a number appened.
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            $BackupSucc = $true
                         }
                         catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            $BackupSucc = $false
                         }
                     }
 
@@ -506,9 +509,11 @@ Function OptionsRun
                         ## 7-zip compression with shortdate configured and no need for a number appened.
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
+                            $BackupSucc = $true
                         }
                         catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            $BackupSucc = $false
                         }
                     }
                 }
@@ -535,18 +540,22 @@ Function OptionsRun
                         ## 7-zip compression with shortdate configured and a number appened.
                         try {
                             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            $BackupSucc = $true
                         }
                         catch {
                             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            $BackupSucc = $false
                         }
                     }
 
                     ## 7-zip compression with shortdate configured and no need for a number appened.
                     try {
                         & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
+                        $BackupSucc = $true
                     }
                     catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
                     }
                 }
             }
@@ -555,9 +564,11 @@ Function OptionsRun
                 ## 7-zip compression with longdate.
                 try {
                     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
+                    $BackupSucc = $true
                 }
                 catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    $BackupSucc = $false
                 }
             }
         }
@@ -590,18 +601,22 @@ Function OptionsRun
                     ## Windows compression with shortdate configured and a number appened.
                     try {
                         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                        $BackupSucc = $true
                     }
                     catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
                     }
                 }
 
                 else {
                     try {
                         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
+                        $BackupSucc = $true
                     }
                     catch {
                         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
                     }
                 }
             }
@@ -609,15 +624,24 @@ Function OptionsRun
             else {
                 try {
                     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
+                    $BackupSucc = $true
                 }
                 catch {
                     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    $BackupSucc = $false
                 }
             }
         }
 
         ## Remove the VMs export folder.
-        Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
+        If ($BackupSucc)
+        {
+            Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
+        }
+
+        else {
+            Write-Log -Type Err -Evt "(VM:$Vm) Compressing backup failed."
+        }
 
         ## If working directory has been configured by the user, move the compressed backup to the backup folder and rename to include the date.
         If ($WorkDir -ne $Backup)
@@ -675,7 +699,7 @@ Function OptionsRun
                     }
                 }
 
-                else{
+                else {
                     $BackupFile = Get-ChildItem -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*") -File
                     $BackupFileN = $BackupFile.name
                     $BackupFileNSplit = $BackupFileN.split(".")
@@ -1204,23 +1228,24 @@ If ($Vms.count -ne 0)
         ## Do a regular export of the VMs.
         ForEach ($Vm in $Vms)
         {
+            $BackupSucc = $false
+
             try {
                 Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
                 $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
-
-                $BackupCurrent = Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Where {([datetime]::now.Date -eq $_.LastWriteTime.Date)}
-
-                If ($BackupCurrent -ne $null)
-                {
-                    OptionsRun
-                }
-                
-                else {
-                    Write-Log -Type Err -Evt "(VM:$Vm) No recent backup found. Skipping options."
-                }
+                $BackupSucc = $true
             }
             catch {
                 $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+
+            If ($BackupSucc)
+            {
+                OptionsRun
+            }
+
+            else {
                 Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
             }
         }
