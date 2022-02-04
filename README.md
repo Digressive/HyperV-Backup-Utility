@@ -71,7 +71,7 @@ Here’s a list of all the command line switches and example configurations.
 | -Subject | The subject line for the e-mail log. Encapsulate with single or double quotes. If no subject is specified, the default of "Hyper-V Backup Utility Log" will be used. | 'Server: Notification' |
 | -SendTo | The e-mail address the log should be sent to. | me@contoso.com |
 | -From | The e-mail address the log should be sent from. | HyperV@contoso.com |
-| -Smtp | The DNS name or IP address of the SMTP server. | smtp.live.com OR smtp.office365.com |
+| -Smtp | The DNS name or IP address of the SMTP server. | smtp-mail.outlook.com OR smtp.office365.com |
 | -Port | The Port that should be used for the SMTP server. If none is specified then the default of 25 will be used. | 587 |
 | -User | The user account to authenticate to the SMTP server. | example@contoso.com |
 | -Pwd | The txt file containing the encrypted password for SMTP authentication. | ```C:\scripts\ps-script-pwd.txt``` |
