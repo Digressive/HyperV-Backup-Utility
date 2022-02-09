@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.01.19
+.VERSION 22.02.08
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -173,7 +173,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.01.19     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.02.08     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                       Donate: https://www.paypal.me/digressive                                           "
     Write-Host ""
 }
@@ -931,7 +931,7 @@ If ($Vms.count -ne 0)
     ##
 
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "Utility Version:.........22.01.19"
+    Write-Log -Type Conf -Evt "Utility Version:.........22.02.08"
     Write-Log -Type Conf -Evt "Hostname:................$Vs."
     Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
     Write-Log -Type Conf -Evt "VMs to backup:..........."
@@ -1225,6 +1225,18 @@ If ($Vms.count -ne 0)
             }
         }
 
+        ## If default key is already null, then disable VSS Legacy Tracing on Windows Server 2016 to prevent possible BSOD on Hyper-V Host.
+        ## Don't want to mess up anyone's config. :)
+        If ($OSV -eq "10.0.14393")
+        {
+            If ((get-ItemProperty -literalPath HKLM:\System\CurrentControlSet\Services\VSS\Diag\).'(Default)' -eq $null)
+            {
+                $RegVSSFix = $True
+                Set-ItemProperty -Path HKLM:\System\CurrentControlSet\Services\VSS\Diag -Name "(default)" -Value "Disabled"
+                Write-Log -Type Info -Evt "Disabling VSS Legacy Tracing on Windows Server 2016 to prevent possible BSOD on Hyper-V Host."
+            }
+        }
+
         ## Do a regular export of the VMs.
         ForEach ($Vm in $Vms)
         {
@@ -1247,6 +1259,16 @@ If ($Vms.count -ne 0)
 
             else {
                 Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
+            }
+        }
+
+        ## If the VSS fix was run, return regkey back to original state.
+        If ($OSV -eq "10.0.14393")
+        {
+            If ($RegVSSFix)
+            {
+                REG DELETE "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\VSS\Diag" /ve /f
+                Write-Log -Type Info -Evt "Returning VSS Legacy Tracing config to default."
             }
         }
     }
