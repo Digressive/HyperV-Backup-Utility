@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.02.08
+.VERSION 22.03.26
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -173,7 +173,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.02.08     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.03.26     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                       Donate: https://www.paypal.me/digressive                                           "
     Write-Host ""
 }
@@ -931,7 +931,7 @@ If ($Vms.count -ne 0)
     ##
 
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "Utility Version:.........22.02.08"
+    Write-Log -Type Conf -Evt "Utility Version:.........22.03.26"
     Write-Log -Type Conf -Evt "Hostname:................$Vs."
     Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
     Write-Log -Type Conf -Evt "VMs to backup:..........."
@@ -1086,11 +1086,13 @@ If ($Vms.count -ne 0)
             #Check for VM running
             If (Get-VM | Where-Object {$_.State -eq 'Running'})
             {
+                $VMwasRunning = $true
                 Write-Log -Type Info -Evt "(VM:$Vm) Stopping VM"
                 Stop-VM -Name $Vm
             }
 
             else {
+                $VMwasRunning = $false
                 Write-Log -Type Err -Evt "(VM:$Vm) VM not running"
             }
 
@@ -1183,8 +1185,11 @@ If ($Vms.count -ne 0)
                 }
             }
 
-            Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
-            Start-VM $Vm
+            If ($VMwasRunning)
+            {
+                Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
+                Start-VM $Vm
+            }
 
             If ($BackupSucc)
             {
