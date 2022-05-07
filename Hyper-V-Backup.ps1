@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.03.26
+.VERSION 22.05.08
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -173,7 +173,7 @@ If ($NoBanner -eq $False)
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "  |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |  "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "           __/ | |                                                  | |                            __/ |  "
-    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.03.26     |___/   "
+    Write-Host -ForegroundColor Yellow -BackgroundColor Black "          |___/|_|          Mike Galvin   https://gal.vin           |_|      Version 22.05.08     |___/   "
     Write-Host -ForegroundColor Yellow -BackgroundColor Black "                       Donate: https://www.paypal.me/digressive                                           "
     Write-Host ""
 }
@@ -931,7 +931,7 @@ If ($Vms.count -ne 0)
     ##
 
     Write-Log -Type Conf -Evt "************ Running with the following config *************."
-    Write-Log -Type Conf -Evt "Utility Version:.........22.03.26"
+    Write-Log -Type Conf -Evt "Utility Version:.........22.05.08"
     Write-Log -Type Conf -Evt "Hostname:................$Vs."
     Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
     Write-Log -Type Conf -Evt "VMs to backup:..........."
@@ -1104,12 +1104,12 @@ If ($Vms.count -ne 0)
 
             $VmState = Get-Vm -Name $Vm
 
-            If ($VmState.State -ne 'Off' -OR $VmState.Status -ne 'Operating normally')
+            If ($VmState.State -ne 'Off' -OR $VmState.State -ne 'Saved' -AND $VmState.Status -ne 'Operating normally')
             {
                 do {
                     Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
                     Start-Sleep -S 60
-                } until ($VmState.State -eq 'Off' -AND $VmState.Status -eq 'Operating normally')
+                } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
             }
 
             try {
