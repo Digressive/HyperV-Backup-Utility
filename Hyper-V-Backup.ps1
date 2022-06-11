@@ -230,7 +230,7 @@ else {
     If ($LogPathUsr)
     {
         ## Clean User entered string
-        $LogPathUsr = $LogPathUsr.trimend('\')
+        $LogPath = $LogPathUsr.trimend('\')
 
         ## Make sure the log directory exists.
         If ((Test-Path -Path $LogPath) -eq $False)
@@ -1171,6 +1171,10 @@ else {
         ## Display current config ends here.
         ##
 
+        ## For Success/Fail stats
+        $Succi = 0
+        $Faili = 0
+
         ##
         ## -NoPerms process starts here.
         ##
@@ -1379,10 +1383,12 @@ else {
                 {
                     OptionsRun
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
+                    $Succi = $Succi+1
                 }
 
                 else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
+                    $Faili = $Faili+1
                 }
             }
 
@@ -1407,6 +1413,9 @@ else {
     }
 
     Write-Log -Type Info -Evt "Process finished."
+    Write-Log -Type Info -Evt "Number of VMs to Backup:$($Vms.count)"
+    Write-Log -Type Info -Evt "Backups Successful:$Succi"
+    Write-Log -Type Info -Evt "Backups Failed:$Faili"
 
     If ($Null -ne $LogHistory)
     {
