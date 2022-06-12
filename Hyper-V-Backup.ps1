@@ -1460,16 +1460,16 @@ else {
                         ## If it isn't then don't use SSL, but still authenticate with the credentials.
                         If ($UseSsl)
                         {
-                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
+                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
                         }
 
                         else {
-                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
+                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
                         }
                     }
 
                     else {
-                        Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
+                        Send-MailMessage -To $Peeps -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
                     }
                 }
             }
