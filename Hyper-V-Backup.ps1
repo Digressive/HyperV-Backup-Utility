@@ -1196,7 +1196,7 @@ else {
                 try {
                     New-Item "$WorkDir\$Vm" -ItemType Directory -Force | Out-Null
                     New-Item "$WorkDir\$Vm\Virtual Machines" -ItemType Directory -Force | Out-Null
-                    New-Item "$WorkDir\$Vm\VHD" -ItemType Directory -Force | Out-Null
+                    New-Item "$WorkDir\$Vm\Virtual Hard Disks" -ItemType Directory -Force | Out-Null
                     New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
                     $BackupSucc = $true
                 }
@@ -1257,7 +1257,7 @@ else {
                 try {
                     $BackupSucc = $false
                     Write-Log -Type Info -Evt "(VM:$Vm) Copying VHD files"
-                    Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force
+                    Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force
                     $BackupSucc = $true
                 }
                 catch {
@@ -1298,7 +1298,7 @@ else {
                     try {
                         $BackupSucc = $false
                         Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot root VHD files"
-                        Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\VHD\" -Recurse -Force -ErrorAction 'Stop'
+                        Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force -ErrorAction 'Stop'
                         $BackupSucc = $true
                     }
                     catch {
@@ -1447,27 +1447,30 @@ else {
                 ## Setting the contents of the log to be the e-mail body.
                 $MailBody = Get-Content -Path $Log | Out-String
 
-                ## If an smtp password is configured, get the username and password together for authentication.
-                ## If an smtp password is not provided then send the e-mail without authentication and obviously no SSL.
-                If ($SmtpPwd)
+                ForEach ($Peeps in $MailTo)
                 {
-                    $SmtpPwdEncrypt = Get-Content $SmtpPwd | ConvertTo-SecureString
-                    $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList ($SmtpUser, $SmtpPwdEncrypt)
-
-                    ## If -ssl switch is used, send the email with SSL.
-                    ## If it isn't then don't use SSL, but still authenticate with the credentials.
-                    If ($UseSsl)
+                    ## If an smtp password is configured, get the username and password together for authentication.
+                    ## If an smtp password is not provided then send the e-mail without authentication and obviously no SSL.
+                    If ($SmtpPwd)
                     {
-                        Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
+                        $SmtpPwdEncrypt = Get-Content $SmtpPwd | ConvertTo-SecureString
+                        $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList ($SmtpUser, $SmtpPwdEncrypt)
+
+                        ## If -ssl switch is used, send the email with SSL.
+                        ## If it isn't then don't use SSL, but still authenticate with the credentials.
+                        If ($UseSsl)
+                        {
+                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
+                        }
+
+                        else {
+                            Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
+                        }
                     }
 
                     else {
-                        Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
+                        Send-MailMessage -To $Peeps -From $MailFrom -Subject "Backups Successful:$Succi/$($Vms.count)" $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
                     }
-                }
-
-                else {
-                    Send-MailMessage -To $MailTo -From $MailFrom -Subject $MailSubject -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
                 }
             }
 
