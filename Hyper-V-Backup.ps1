@@ -98,15 +98,19 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
 {
     Write-Host -Object "Usage:
     From a terminal run: [path\]Hyper-V-Backup.ps1 -BackupTo [path\]
-    This will backup all the VMs running to the backup localtion specified.
+    This will backup all the VMs running to the backup location specified.
 
-    -List [path\]vms.txt
-    -Wd [path\]
-    -Keep [number]
-    -NoPerms
-    -Compress
-    -Sz
-    -SzOptions ""'-t7z,-v2g,-ppassword'""
+    Use -List [path\]vms.txt to specify a list of vm names to backup.
+    Use -Wd [path\] to configure a working directory for the backup process.
+    Use -Keep [number] to specify how many days worth of backup to keep.
+    Use -ShortDate to use only the Year, Month and Day in backup filenames.
+
+    -NoPerms should only be used when a regular backup cannot be performed.
+    Please note: this will cause the VMs to shutdown during the backup process.
+
+    Use -Compress to compress the VM backups in a zip file using Windows compression.
+    Use -Sz to use 7-zip 
+    Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
 
     To output a log: -L [path\logs].
     To remove logs produced by the utility older than X days: -LogRotate [number].
@@ -115,12 +119,16 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     To use the 'email log' function:
     Specify the subject line with -Subject ""'[subject line]'"" If you leave this blank a default subject will be used
     Make sure to encapsulate it with double & single quotes as per the example for Powershell to read it correctly.
+
     Specify the 'to' address with -SendTo [example@contoso.com]
     For multiple address, separate with a comma.
+
     Specify the 'from' address with -From [example@contoso.com]
     Specify the SMTP server with -Smtp [smtp server name]
+
     Specify the port to use with the SMTP server with -Port [port number].
     If none is specified then the default of 25 will be used.
+
     Specify the user to access SMTP with -User [example@contoso.com]
     Specify the password file to use with -Pwd [path\]ps-script-pwd.txt.
     Use SSL for SMTP server connection with -UseSsl.
