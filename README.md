@@ -4,18 +4,17 @@ Flexible Hyper-V Backup Utility
 
 For full change log and more information, [visit my site.](https://gal.vin/utils/hyperv-backup-utility/)
 
-A demonstration video is available on [my YouTube channel.](https://youtu.be/q_U40ZZs9ag)
+Hyper-V Backup Utility is available from:
+
+* [GitHub](https://github.com/Digressive/HyperV-Backup-Utility)
+* [The Microsoft PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
 
 Please consider supporting my work:
 
-* Sign up [using Patreon.](https://www.patreon.com/mikegalvin)
-* Support with a one-time payment [using PayPal.](https://www.paypal.me/digressive)
+* Sign up using [Patreon](https://www.patreon.com/mikegalvin).
+* Support with a one-time donation using [PayPal](https://www.paypal.me/digressive).
 
-Hyper-V Backup Utility can also be downloaded from:
-
-* [The Microsoft PowerShell Gallery](https://www.powershellgallery.com/packages/Hyper-V-Backup)
-
-Join the [Discord](http://discord.gg/5ZsnJ5k) or Tweet me if you have questions: [@mikegalvin_](https://twitter.com/mikegalvin_)
+If you’d like to contact me, please leave a comment, send me a [tweet or DM](https://twitter.com/mikegalvin_), or you can join my [Discord server](https://discord.gg/5ZsnJ5k).
 
 -Mike
 
@@ -26,19 +25,19 @@ Join the [Discord](http://discord.gg/5ZsnJ5k) or Tweet me if you have questions:
 * The utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export to.
 * The utility supports Hyper-V hosts in a clustered configuration.
 * The utility requires at least Windows PowerShell 5.0
-* The utility has been tested on Windows 10, Windows Server 2019 and Windows Server 2016 (Datacenter and Core Installations).
+* The utility has been tested on Windows 11, Windows 10, Windows Server 2022, Windows Server 2019 and Windows Server 2016.
 
-### 7-Zip support
+## 7-Zip support
 
 I've implemented support for 7-Zip into the script. You should be able to use any option that 7-zip supports, although currently the only options I've tested fully are '-t' archive type, '-p' password and '-v' split files.
 
-### When to use the -NoPerms switch
+## When to use the -NoPerms switch
 
 The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host cannot be given the required permissions to run a regular export to a remote device such as a NAS device.
 
 Hyper-V’s export operation requires that the computer account in Active Directory have access to the location where the exports are being stored. I recommend creating an Active Directory group for the Hyper-V hosts and then giving the group the required ‘Full Control’ file and share permissions. When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed, so the VM will be shut down for the duration of the copy process when the -NoPerms switch is used.
 
-### Generating A Password File
+## Generating A Password File
 
 The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell on the computer and logged in with the user that will be running the utility. When you run the command, you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
 
@@ -51,7 +50,7 @@ $creds.Password | ConvertFrom-SecureString | Set-Content c:\scripts\ps-script-pw
 
 After running the commands, you will have a text file containing the encrypted password. When configuring the -Pwd switch enter the path and file name of this file.
 
-### Configuration
+## Configuration
 
 Here’s a list of all the command line switches and example configurations.
 
@@ -77,7 +76,7 @@ Here’s a list of all the command line switches and example configurations.
 | -Pwd | The txt file containing the encrypted password for SMTP authentication. | ```C:\scripts\ps-script-pwd.txt``` |
 | -UseSsl | Configures the utility to connect to the SMTP server using SSL. | N/A |
 
-### Example
+## Example
 
 ``` txt
 Hyper-V-Backup.ps1 -BackupTo \\server\vm-backup -List C:\scripts\vms.txt -Wd C:\temp -Keep 30 -Compress -Sz -SzOptions '-t7z,-ppassword' -L C:\scripts\logs -Subject 'Server: Hyper-V Backup' -SendTo me@contoso.com -From hyperv@contoso.com -Smtp smtp.outlook.com -User me@contoso.com -Pwd C:\scripts\ps-script-pwd.txt -UseSsl
