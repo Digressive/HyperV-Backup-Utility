@@ -900,7 +900,7 @@ else {
     else {
         ## Test for Hyper-V feature installed on local machine.
         try {
-            $HvFeature = Get-Service vmcompute -ErrorAction Stop
+            Get-Service vmcompute -ErrorAction Stop
         }
 
         catch {
@@ -1281,7 +1281,7 @@ else {
             ## Don't want to mess up anyone's config. :)
             If ($OSV -eq "10.0.14393")
             {
-                If ((get-ItemProperty -literalPath HKLM:\System\CurrentControlSet\Services\VSS\Diag\).'(Default)' -eq $null)
+                If ($null -eq (get-ItemProperty -literalPath HKLM:\System\CurrentControlSet\Services\VSS\Diag\).'(Default)')
                 {
                     $RegVSSFix = $True
                     Set-ItemProperty -Path HKLM:\System\CurrentControlSet\Services\VSS\Diag -Name "(default)" -Value "Disabled"
