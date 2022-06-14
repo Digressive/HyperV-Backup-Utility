@@ -112,7 +112,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Sz to use 7-zip 
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
 
-    To output a log: -L [path\logs].
+    To output a log: -L [path\].
     To remove logs produced by the utility older than X days: -LogRotate [number].
     Run with no ASCII banner: -NoBanner
 

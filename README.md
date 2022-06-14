@@ -67,7 +67,7 @@ Here’s a list of all the command line switches and example configurations.
 | -Sz | Configure the utility to use 7-Zip to compress the VM backups. 7-Zip must be installed in the default location ```$env:ProgramFiles``` if it is not found, Windows compression will be used. | N/A |
 | -SzOptions | Use this switch to configure options for 7-Zip. The switches must be comma separated. | "'-t7z,-v2G,-ppassword'" |
 | -ShortDate | Configure the script to use only the Year, Month and Day in backup filenames. | N/A |
-| -L | The path to output the log file to. | [path\logs] |
+| -L | The path to output the log file to. | [path\] |
 | -LogRotate | Remove logs produced by the utility older than X days | [number] |
 | -NoBanner | Use this option to hide the ASCII art title in the console. | N/A |
 | -Help | Display usage information. No arguments also displays help. | N/A |
