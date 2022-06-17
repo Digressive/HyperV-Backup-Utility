@@ -900,7 +900,14 @@ else {
     else {
         ## Test for Hyper-V feature installed on local machine.
         try {
-            Get-Service vmcompute -ErrorAction Stop
+            If ($OSV -eq "6.3.9600")
+            {
+                Get-Service vmms -ErrorAction Stop
+            }
+
+            else {
+                Get-Service vmcompute -ErrorAction Stop
+            }
         }
 
         catch {
