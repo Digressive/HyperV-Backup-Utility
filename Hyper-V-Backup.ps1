@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.06.17
+.VERSION 22.06.18
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -89,7 +89,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 22.06.17              
+                              Mike Galvin   https://gal.vin                     Version 22.06.18              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -241,8 +241,6 @@ else {
             If ($ShortDate)
             {
                 ## report old files to remove
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory
-
                 If ($LogPathUsr)
                 {
                     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -254,8 +252,6 @@ else {
 
             else {
                 ## report old files to remove
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory
-
                 If ($LogPathUsr)
                 {
                     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -275,8 +271,6 @@ else {
                     If ($ShortDate)
                     {
                         ## report old files to remove
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory
-
                         If ($LogPathUsr)
                         {
                             Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -288,8 +282,6 @@ else {
 
                     else {
                         ## report old files to remove
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory
-
                         If ($LogPathUsr)
                         {
                             Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -312,8 +304,6 @@ else {
                 If ($ShortDate)
                 {
                     ## report old files to remove
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                     If ($LogPathUsr)
                     {
                         Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -325,8 +315,6 @@ else {
 
                 else {
                     ## report old files to remove
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                     If ($LogPathUsr)
                     {
                         Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -345,8 +333,6 @@ else {
                         If ($ShortDate)
                         {
                             ## report old files to remove
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                             If ($LogPathUsr)
                             {
                                 Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -358,8 +344,6 @@ else {
 
                         else {
                             ## report old files to remove
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                             If ($LogPathUsr)
                             {
                                 Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -416,8 +400,6 @@ else {
                 If ($ShortDate)
                 {
                     ## report old files to remove
-                    Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                     If ($LogPathUsr)
                     {
                         Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -429,8 +411,6 @@ else {
 
                 else {
                     ## report old files to remove
-                    Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                     If ($LogPathUsr)
                     {
                         Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -449,8 +429,6 @@ else {
                         If ($ShortDate)
                         {
                             ## report old files to remove
-                            Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                             If ($LogPathUsr)
                             {
                                 Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -462,8 +440,6 @@ else {
 
                         else {
                             ## report old files to remove
-                            Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Where-Object CreationTime -lt (Get-Date).AddDays(-$History)
-
                             If ($LogPathUsr)
                             {
                                 Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
@@ -902,11 +878,11 @@ else {
         try {
             If ($OSV -eq "6.3.9600")
             {
-                Get-Service vmms -ErrorAction Stop
+                Get-Service vmms -ErrorAction Stop | Out-Null
             }
 
             else {
-                Get-Service vmcompute -ErrorAction Stop
+                Get-Service vmcompute -ErrorAction Stop | Out-Null
             }
         }
 
@@ -1000,7 +976,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "************ Running with the following config *************."
-        Write-Log -Type Conf -Evt "Utility Version:.........22.06.17"
+        Write-Log -Type Conf -Evt "Utility Version:.........22.06.18"
         Write-Log -Type Conf -Evt "Hostname:................$Vs."
         Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
 
@@ -1250,10 +1226,12 @@ else {
                     Start-Sleep -S 60
                     OptionsRun
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
+                    $Succi = $Succi+1
                 }
 
                 else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
+                    $Faili = $Faili+1
                     Start-Sleep -S 60
                 }
             }
