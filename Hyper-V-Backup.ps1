@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.06.18
+.VERSION 22.06.22
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -89,7 +89,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 22.06.18              
+                              Mike Galvin   https://gal.vin                     Version 22.06.22              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -867,6 +867,12 @@ else {
     ## End of backup Options function
     ##
 
+    ## getting Windows Version info
+    $OSVMaj = [environment]::OSVersion.Version | Select-Object -expand major
+    $OSVMin = [environment]::OSVersion.Version | Select-Object -expand minor
+    $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
+    $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
+
     If ($Null -eq $BackupUsr)
     {
         Write-Log -Type Err -Evt "You must specify -BackupTo [path\]."
@@ -930,12 +936,6 @@ else {
     ## Setting an easier to use variable for computer name of the Hyper-V server.
     $Vs = $Env:ComputerName
 
-    ## getting Windows Version info
-    $OSVMaj = [environment]::OSVersion.Version | Select-Object -expand major
-    $OSVMin = [environment]::OSVersion.Version | Select-Object -expand minor
-    $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
-    $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
-
     ## If a VM list file is configured, get the content of the file, otherwise just get the running VMs.
     ## Clean list if it has empty lines.
     If ($VmList)
@@ -976,7 +976,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "************ Running with the following config *************."
-        Write-Log -Type Conf -Evt "Utility Version:.........22.06.18"
+        Write-Log -Type Conf -Evt "Utility Version:.........22.06.22"
         Write-Log -Type Conf -Evt "Hostname:................$Vs."
         Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
 
