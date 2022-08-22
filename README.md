@@ -2,6 +2,8 @@
 
 Flexible Hyper-V Backup Utility
 
+[中文文档](./zh-cn/README-CN.md/)
+
 For full change log and more information, [visit my site.](https://gal.vin/utils/hyperv-backup-utility/)
 
 Hyper-V Backup Utility is available from:
