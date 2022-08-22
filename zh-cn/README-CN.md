@@ -77,8 +77,8 @@ $creds.Password | ConvertFrom-SecureString | Set-Content c:\scripts\ps-script-pw
 
 下方是脚本的参数 和 基本用法
 
-| 参数 | 描述 | 示例 |
-| -- | -- | -- |
+| 可供配置的参数 | 描述 | 示例 |
+| ------------ | -- | ----- |
 | -BackupTo | 把虚拟机备份到的路径。每个 VM 在此位置中都会自动创建自己的文件夹。 | [path\] |
 | -List | 把需要备份的虚拟机名称输入到 vms.txt 中，如果没有此参数将会自动备份所有运行中的虚拟机 | [path\]vms.txt |
 | -Wd | 在移至最终磁盘前先备份虚拟机备份文件至缓存盘| [path\] |
