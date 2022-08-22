@@ -18,7 +18,7 @@ Hyper-V 备份工具现已在以下平台发布 :
 
 -Mike
 
-我是此 ReadMe 翻译者，如有翻译错误请提 issuse 或 直接邮箱联系我 developer024h@gmail.com
+我是此 ReadMe 翻译者，如有翻译错误请提 issues 或 直接邮箱联系我 developer024h@gmail.com
 
 -Developer024
 
