@@ -299,7 +299,6 @@ else {
             {
                 Write-Log -Type Info -Evt "(VM:$Vm) Removing backup folders older than: $History days"
 
-                ## Remove previous backup folders older than the configured number of days.
                 If ($ShortDate)
                 {
                     ## report old files to remove
@@ -356,6 +355,8 @@ else {
             }
         }
 
+
+        ## 2nd Function start here maybe
         ## Remove ALL previous backup files. -Keep switch is NOT configured and -Compress switch IS.
         If ($Compress)
         {
@@ -363,7 +364,6 @@ else {
             {
                 Write-Log -Type Info -Evt "(VM:$Vm) Removing all previous compressed backups"
 
-                ## Remove all previous compressed backups
                 If ($ShortDate)
                 {
                     Remove-Item "$WorkDir\$VmFixed-*-*-*.*" -Force
@@ -395,7 +395,6 @@ else {
             else {
                 Write-Log -Type Info -Evt "(VM:$Vm) Removing compressed backups older than: $History days"
 
-                ## Remove previous compressed backups older than the configured number of days.
                 If ($ShortDate)
                 {
                     ## report old files to remove
@@ -451,6 +450,7 @@ else {
                 }
             }
 
+            ## 3rd Function here maybe
             ## If -Compress and -Sz are configured AND 7-zip is installed - compress the backup folder, if it isn't fallback to Windows compression.
             If ($Sz -eq $True -AND $7zT -eq $True)
             {
