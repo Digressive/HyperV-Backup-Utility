@@ -224,15 +224,15 @@ else {
     }
 
     ##
-    ## Start of backup Options function
+    ## Start of Options functions
     ##
-    Function OptionsRun
+    Function OptionsCleanOld
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
         $BackupSucc = $false
         $VmFixed = $Vm.replace(".","-")
 
-        ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
+        ## Remove previous backup folders. No Keep, No Compress switch
         If ($Null -eq $History -And $Compress -eq $False)
         {
             Write-Log -Type Info -Evt "(VM:$Vm) Removing previous backups"
@@ -293,7 +293,7 @@ else {
             }
         }
 
-        ## Remove previous backup folders older than X days. -Keep switch is configured and -Compress switch is NOT.
+        ## Remove previous backup folders older than X days. Yes Keep, No Compress switch
         else {
             If ($Compress -eq $False)
             {
@@ -355,9 +355,7 @@ else {
             }
         }
 
-
-        ## 2nd Function start here maybe
-        ## Remove ALL previous backup files. -Keep switch is NOT configured and -Compress switch IS.
+        ## Remove previous backup files. No Keep, Yes Compress switch
         If ($Compress)
         {
             If ($Null -eq $History)
@@ -391,7 +389,7 @@ else {
                 }
             }
 
-            ## Remove previous backup files older than X days. -Keep and -Compress switch are configured.
+            ## Remove previous backup files older than X days. Yes Keep, Yes Compress switch
             else {
                 Write-Log -Type Info -Evt "(VM:$Vm) Removing compressed backups older than: $History days"
 
@@ -449,22 +447,33 @@ else {
                     }
                 }
             }
+        }
+    }
 
-            ## TODO: 3rd Function here maybe
-            ## If -Compress and -Sz are configured AND 7-zip is installed - compress the backup folder, if it isn't fallback to Windows compression.
+    Function OptionsCompress
+    {
+        ## For 7zip, replace . dots with - hyphens in the vm name
+        $BackupSucc = $false
+        $VmFixed = $Vm.replace(".","-")
+
+        ## Remove previous backup files. No Keep, Yes Compress switch
+        If ($Compress)
+        {
+            ## If Yes Compress, Yes Sz and 7-zip is detected as installed - compress the backup folder, if it isn't fallback to Windows compression.
             If ($Sz -eq $True -AND $7zT -eq $True)
             {
                 Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using 7-Zip compression"
 
-                ## If -ShortDate is configured, test for an old backup file, if true append a number (and increase the number if file still exists) before the file extension.
+                ## If Yes ShortDate, test for an old backup file. If file exist true, append a number (and increase the number if file still exists) before the file extension.
                 If ($ShortDate)
                 {
                     ## If using 7zip's split file feature with short dates, we need to handle the files a little differently.
                     If ($SzSwSplit -like "-v*")
                     {
-                        $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*") ## TODO: Tidy up tests
+                        ##$ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*") ## TODO: Tidy up tests
 
-                        If ($ShortDateT)
+                        ##If ($ShortDateT)
+                        If (Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*"))
                         {
                             Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                             $i = 1
@@ -755,8 +764,7 @@ else {
             }
         }
 
-        ## -Compress switch is NOT configured and the -Keep switch is configured.
-        ## Rename the export of each VM to include the date.
+        ## Rename the export of each VM to include the date. Yes Keep, No Compress switch
         else {
             If ($ShortDate)
             {
@@ -863,7 +871,7 @@ else {
         }
     }
     ##
-    ## End of backup Options function
+    ## End of backup Options functions
     ##
 
     ## getting Windows Version info
@@ -1223,7 +1231,8 @@ else {
                 If ($BackupSucc)
                 {
                     Start-Sleep -S 60
-                    OptionsRun
+                    OptionsCleanOld
+                    OptionsCompress
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
@@ -1290,7 +1299,8 @@ else {
 
                 If ($BackupSucc)
                 {
-                    OptionsRun
+                    OptionsCleanOld
+                    OptionsCompress
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
