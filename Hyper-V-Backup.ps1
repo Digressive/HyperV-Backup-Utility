@@ -583,7 +583,7 @@ else {
                             } until ($ShortDateExistT -eq $false)
                         }
 
-                        ## Windows compression with shortdate configured and a number appened.
+                        ## Windows compression with shortdate configured and a number appended.
                         try {
                             [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
                             $BackupSucc = $true
@@ -638,7 +638,7 @@ else {
                     New-Item $Backup -ItemType Directory -Force | Out-Null
                 }
 
-                ## Get the exact name of the backup file and append numbers onto the filename, keeping the extention intact.
+                ## Get the exact name of the backup file and append numbers onto the filename, keeping the extension intact.
                 If ($ShortDate)
                 {
                     If ($SzSwSplit -like "-v*")
@@ -724,7 +724,7 @@ else {
                                 }
                             }
 
-                            ## Move with shortdate and appened number
+                            ## Move with shortdate and appended number
                             try {
                                 Get-ChildItem -Path $BackupFile | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                             }
