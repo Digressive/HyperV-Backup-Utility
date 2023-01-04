@@ -456,7 +456,7 @@ else {
             {
                 Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using 7-Zip compression"
 
-                ## If -Shortdate is configured, test for an old backup file, if true append a number (and increase the number if file still exists) before the file extension.
+                ## If -ShortDate is configured, test for an old backup file, if true append a number (and increase the number if file still exists) before the file extension.
                 If ($ShortDate)
                 {
                     ## If using 7zip's split file feature with short dates, we need to handle the files a little differently.
@@ -479,7 +479,7 @@ else {
                                 } until ($ShortDateExistT -eq $false)
                             }
 
-                            ## 7-zip compression with shortdate configured and a number appened.
+                            ## 7-zip compression with shortdate configured and a number appended.
                             try {
                                 & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
                                 $BackupSucc = $true
@@ -491,7 +491,7 @@ else {
                         }
 
                         else {
-                            ## 7-zip compression with shortdate configured and no need for a number appened.
+                            ## 7-zip compression with shortdate configured and no need for a number appended.
                             try {
                                 & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
                                 $BackupSucc = $true
