@@ -512,6 +512,7 @@ else {
                         }
                     }
 
+                    ## If not using 7zip's split file feature with short dates.
                     else
                     {
                         $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*")
@@ -554,6 +555,7 @@ else {
                     }
                 }
 
+                ## No ShortDate switch
                 else {
                     ## 7-zip compression with longdate.
                     try {
@@ -567,7 +569,7 @@ else {
                 }
             }
 
-            ## Compress the backup folder using Windows compression. -Compress is configured, -Sz switch is not, or it is and 7-zip isn't detected.
+            ## Compress the backup folder using Windows compression. Yes Compress, No Sz Switch or Yes Configured and 7-zip is not detected.
             ## This is also the "fallback" windows compression code.
             else {
                 Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
@@ -603,6 +605,7 @@ else {
                         }
                     }
 
+                    ## No Shortdate file found
                     else {
                         try {
                             [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
@@ -615,6 +618,7 @@ else {
                     }
                 }
 
+                ## No Shortdate switch
                 else {
                     try {
                         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
@@ -627,17 +631,18 @@ else {
                 }
             }
 
-            ## Remove the VMs export folder.
+            ## If Backup is Successful, remove the VMs export folder.
             If ($BackupSucc)
             {
                 Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
             }
 
+            ## If Backup failed log it.
             else {
                 Write-Log -Type Err -Evt "(VM:$Vm) Compressing backup failed."
             }
 
-            ## If working directory has been configured by the user, move the compressed backup to the backup folder and rename to include the date.
+            ## If Yes WorkDir, move the compressed backup to the backup folder and rename to include the date.
             If ($WorkDir -ne $Backup)
             {
                 ## Make sure the backup directory exists.
