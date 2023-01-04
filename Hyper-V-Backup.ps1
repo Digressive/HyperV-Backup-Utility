@@ -450,7 +450,7 @@ else {
                 }
             }
 
-            ## 3rd Function here maybe
+            ## TODO: 3rd Function here maybe
             ## If -Compress and -Sz are configured AND 7-zip is installed - compress the backup folder, if it isn't fallback to Windows compression.
             If ($Sz -eq $True -AND $7zT -eq $True)
             {
@@ -462,7 +462,7 @@ else {
                     ## If using 7zip's split file feature with short dates, we need to handle the files a little differently.
                     If ($SzSwSplit -like "-v*")
                     {
-                        $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*")
+                        $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*") ## TODO: Tidy up tests
 
                         If ($ShortDateT)
                         {
