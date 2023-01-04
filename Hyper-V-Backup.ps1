@@ -237,7 +237,6 @@ else {
         {
             Write-Log -Type Info -Evt "(VM:$Vm) Removing previous backups"
 
-            ## Remove all previous backup folders
             If ($ShortDate)
             {
                 ## report old files to remove
@@ -294,7 +293,7 @@ else {
             }
         }
 
-        ## Remove previous backup folders older than X configured days. -Keep switch is configuired and -Compress switch is NOT.
+        ## Remove previous backup folders older than X days. -Keep switch is configured and -Compress switch is NOT.
         else {
             If ($Compress -eq $False)
             {
@@ -357,7 +356,7 @@ else {
             }
         }
 
-        ## Remove ALL previous backup files. -Keep switch is NOT configuired and -Compress switch IS.
+        ## Remove ALL previous backup files. -Keep switch is NOT configured and -Compress switch IS.
         If ($Compress)
         {
             If ($Null -eq $History)
@@ -1119,7 +1118,7 @@ else {
                     $BackupSucc = $false
                 }
 
-                #Check for VM running
+                ## Check for VM running
                 If (Get-VM | Where-Object {$_.State -eq 'Running'})
                 {
                     $VMwasRunning = $true
@@ -1135,7 +1134,7 @@ else {
                 ##
                 ## Copy the VM config files and log if there is an error.
                 ##
-                #Check for VM being in the correct state before continuing
+                ## Check for VM being in the correct state before continuing
 
                 $VmState = Get-Vm -Name $Vm
 
@@ -1313,7 +1312,7 @@ else {
             }
         }
         ##
-        ## End of standard export block
+        ## End of standard export
         ##
     }
 
