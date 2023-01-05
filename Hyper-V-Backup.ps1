@@ -375,7 +375,7 @@ else {
             }
         }
 
-        ## Remove previous backup folders older than X configured days. -Keep switch is configuired and -Compress switch is NOT.
+        ## Remove previous backup folders older than X configured days. -Keep switch is configured and -Compress switch is NOT.
         else {
             If ($Compress -eq $False)
             {
@@ -438,7 +438,7 @@ else {
             }
         }
 
-        ## Remove ALL previous backup files. -Keep switch is NOT configuired and -Compress switch IS.
+        ## Remove ALL previous backup files. -Keep switch is NOT configured and -Compress switch IS.
         If ($Compress)
         {
             If ($Null -eq $History)
