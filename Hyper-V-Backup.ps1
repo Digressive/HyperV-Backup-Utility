@@ -180,7 +180,7 @@ else {
     }
 
     ## Function for logging.
-    Function Write-Log($Type, $Evt)
+    Function Write-Log($Type,$Evt)
     {
         If ($Type -eq "Info")
         {
@@ -229,11 +229,6 @@ else {
 
     Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
     {
-        $ShortDateName = ($VmFixed-$(Get-DateShort))+$ShortDateFilePat
-        $ShortDateT = Test-Path -Path ("$ShortDateDir\$ShortDateName")
-
-        If ($ShortDateT)
-        {
         Write-Log -Type Info -Evt "(VM:$Vm) Backup $VmFixed-$(Get-DateShort) already exists, appending number"
         $i = 1
         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)+$ShortDateFilePat
@@ -247,7 +242,7 @@ else {
                 $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
             } until ($ShortDateExistT -eq $false)
         }
-    }}
+    }
     Function OptionsRun
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
@@ -489,7 +484,7 @@ else {
 
                         If ($ShortDateT)
                         {
-                            ShortDateFileNo($WorkDir,".*.*")
+                            ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*.*"
                             # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                             # $i = 1
                             # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
@@ -533,7 +528,7 @@ else {
 
                         If ($ShortDateT)
                         {
-                            ShortDateFileNo($WorkDir,".*")
+                            ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*"
                             # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                             # $i = 1
                             # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
@@ -595,7 +590,7 @@ else {
 
                     If ($ShortDateT)
                     {
-                        ShortDateFileNo($WorkDir,".zip")
+                        ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".zip"
                         # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                         # $i = 1
                         # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
@@ -788,9 +783,9 @@ else {
             {
                 $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort)")
 
-                #If ($ShortDateT)
-                #{
-                    ShortDateFileNo($WorkDir,$null)
+                If ($ShortDateT)
+                {
+                    ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat $null
                     # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                     # $i = 1
                     # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
@@ -804,13 +799,13 @@ else {
                     #     } until ($ShortDateExistT -eq $false)
                     # }
 
-                    # try {
-                    #     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
-                    # }
-                    # catch {
-                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    # }
-                #}
+                    try {
+                        Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    }
+                }
 
                 try {
                     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$VmFixed-$(Get-DateShort)")
@@ -845,7 +840,7 @@ else {
 
                     If ($ShortDateT)
                     {
-                        ShortDateFileNo($Backup,$null)
+                        ShortDateFileNo -ShortDateDir $Backup -ShortDateFilePat $null
                         # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                         # $i = 1
                         # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
