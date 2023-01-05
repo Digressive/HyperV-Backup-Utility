@@ -1254,7 +1254,7 @@ else {
                 {
                     Start-Sleep -S 60
                     OptionsCompress
-                    OptionsCleanOld
+                    #OptionsCleanOld
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
@@ -1322,7 +1322,7 @@ else {
                 If ($BackupSucc)
                 {
                     OptionsCompress
-                    OptionsCleanOld
+                    #OptionsCleanOld
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
