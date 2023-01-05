@@ -226,6 +226,20 @@ else {
     ##
     ## Start of backup Options function
     ##
+
+    Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
+    {
+        Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+        $i = 1
+        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+
+        If (Test-Path -Path "$ShortDateDir\$ShortDateNN"+"$ShortDateFilePat")
+        {
+            do {
+                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+            } until ((Test-Path -Path "$ShortDateDir\$ShortDateNN"+"$ShortDateFilePat") -eq $false)
+        }
+    }
     Function OptionsRun
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
@@ -467,18 +481,19 @@ else {
 
                         If ($ShortDateT)
                         {
-                            Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                            $i = 1
-                            $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
+                            ShortDateFileNo($WorkDir,".*.*")
+                            # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+                            # $i = 1
+                            # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                            # $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
 
-                            If ($ShortDateExistT)
-                            {
-                                do {
-                                    $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                                    $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
-                                } until ($ShortDateExistT -eq $false)
-                            }
+                            # If ($ShortDateExistT)
+                            # {
+                            #     do {
+                            #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                            #         $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
+                            #     } until ($ShortDateExistT -eq $false)
+                            # }
 
                             ## 7-zip compression with shortdate configured and a number appened.
                             try {
@@ -510,18 +525,19 @@ else {
 
                         If ($ShortDateT)
                         {
-                            Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                            $i = 1
-                            $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
+                            ShortDateFileNo($WorkDir,".*")
+                            # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+                            # $i = 1
+                            # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                            # $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
 
-                            If ($ShortDateExistT)
-                            {
-                                do {
-                                    $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                                    $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
-                                } until ($ShortDateExistT -eq $false)
-                            }
+                            # If ($ShortDateExistT)
+                            # {
+                            #     do {
+                            #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                            #         $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
+                            #     } until ($ShortDateExistT -eq $false)
+                            # }
 
                             ## 7-zip compression with shortdate configured and a number appened.
                             try {
@@ -571,18 +587,19 @@ else {
 
                     If ($ShortDateT)
                     {
-                        Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                        $i = 1
-                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
-                        $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                        ShortDateFileNo($WorkDir,".zip")
+                        # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+                        # $i = 1
+                        # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                        # $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
 
-                        If ($ShortDateExistT)
-                        {
-                            do {
-                                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
-                                $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-                            } until ($ShortDateExistT -eq $false)
-                        }
+                        # If ($ShortDateExistT)
+                        # {
+                        #     do {
+                        #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
+                        #         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                        #     } until ($ShortDateExistT -eq $false)
+                        # }
 
                         ## Windows compression with shortdate configured and a number appened.
                         try {
@@ -765,25 +782,26 @@ else {
 
                 If ($ShortDateT)
                 {
-                    Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                    $i = 1
-                    $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                    $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                    ShortDateFileNo($WorkDir,$null)
+                    # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+                    # $i = 1
+                    # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                    # $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
 
-                    If ($ShortDateExistT)
-                    {
-                        do {
-                            $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-                        } until ($ShortDateExistT -eq $false)
-                    }
+                    # If ($ShortDateExistT)
+                    # {
+                    #     do {
+                    #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                    #         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
+                    #     } until ($ShortDateExistT -eq $false)
+                    # }
 
-                    try {
-                        Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    }
+                    # try {
+                    #     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+                    # }
+                    # catch {
+                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    # }
                 }
 
                 try {
@@ -819,19 +837,20 @@ else {
 
                     If ($ShortDateT)
                     {
-                        Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                        $i = 1
-                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                        $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+                        ShortDateFileNo($Backup,$null)
+                        # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+                        # $i = 1
+                        # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                        # $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
 
-                        ## If backup folder already exists with same name, append a number
-                        If ($ShortDateExistT)
-                        {
-                            do {
-                                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                                $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
-                            } until ($ShortDateExistT -eq $false)
-                        }
+                        # ## If backup folder already exists with same name, append a number
+                        # If ($ShortDateExistT)
+                        # {
+                        #     do {
+                        #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                        #         $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
+                        #     } until ($ShortDateExistT -eq $false)
+                        # }
 
                         ## Moving backup folder with shortdate and append number
                         try {
