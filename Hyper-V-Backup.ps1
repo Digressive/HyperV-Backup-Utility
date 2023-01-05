@@ -231,14 +231,14 @@ else {
     {
         Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
         $i = 1
-        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-        $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN+$ShortDateFilePat
+        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)+$ShortDateFilePat
+        $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
 
         If ($ShortDateExistT)
         {
             do {
-                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN+$ShortDateFilePat
+                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)+$ShortDateFilePat
+                $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
             } until ($ShortDateExistT -eq $false)
         }
     }
