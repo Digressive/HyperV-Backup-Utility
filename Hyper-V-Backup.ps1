@@ -226,7 +226,6 @@ else {
     ##
     ## Start of backup Options function
     ##
-
     Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
     {
         Write-Log -Type Info -Evt "(VM:$Vm) Backup $VmFixed-$(Get-DateShort) already exists, appending number"
