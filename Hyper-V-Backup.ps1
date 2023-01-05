@@ -164,17 +164,17 @@ else {
     }
 
     ## Function to get date in specific format.
-    Function Get-DateFormat
+    Function Get-DateFormat()
     {
         Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     }
 
-    Function Get-DateShort
+    Function Get-DateShort()
     {
         Get-Date -Format "yyyy-MM-dd"
     }
 
-    Function Get-DateLong
+    Function Get-DateLong()
     {
         Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
     }
@@ -226,12 +226,8 @@ else {
     ##
     ## Start of Options functions
     ##
-    Function OptionsCleanOld
+    Function OptionsCleanOld()
     {
-        ## For 7zip, replace . dots with - hyphens in the vm name
-        $BackupSucc = $false
-        $VmFixed = $Vm.replace(".","-")
-
         ## Remove previous backup folders. No Keep, No Compress switch
         If ($Null -eq $History -And $Compress -eq $False)
         {
@@ -450,11 +446,49 @@ else {
         }
     }
 
-    Function OptionsCompress
+    Function ShortDateFileNo($MainDir,$FilePatt)
+    {
+        If (Test-Path -Path ("$MainDir\$VmFixed-$(Get-DateShort)$FilePatt"))
+        {
+            Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+            $i = 1
+            $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+
+            If (Test-Path -Path "$MainDir\$ShortDateNN"+"$FilePatt")
+            {
+                do {
+                    $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
+                } until ((Test-Path -Path "$MainDir\$ShortDateNN"+"$FilePatt") -eq $false)
+            }
+
+            ## 7-zip compression with shortdate configured and a number appended.
+            try {
+                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$MainDir\$ShortDateNN") "$MainDir\$Vm\*"
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+
+        else {
+            ## 7-zip compression with shortdate configured and no need for a number appended.
+            try {
+                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$MainDir\$VmFixed-$(Get-DateShort)") "$MainDir\$Vm\*"
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+    }
+
+    Function OptionsCompress()
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
         $BackupSucc = $false
-        $VmFixed = $Vm.replace(".","-")
 
         ## Remove previous backup files. No Keep, Yes Compress switch
         If ($Compress)
@@ -470,46 +504,7 @@ else {
                     ## If using 7zip's split file feature with short dates, we need to handle the files a little differently.
                     If ($SzSwSplit -like "-v*")
                     {
-                        ##$ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*") ## TODO: Tidy up tests
-
-                        ##If ($ShortDateT)
-                        If (Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*"))
-                        {
-                            Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                            $i = 1
-                            $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
-
-                            If ($ShortDateExistT)
-                            {
-                                do {
-                                    $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                                    $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
-                                } until ($ShortDateExistT -eq $false)
-                            }
-
-                            ## 7-zip compression with shortdate configured and a number appended.
-                            try {
-                                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
-                                $BackupSucc = $true
-                            }
-                            catch {
-                                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                                $BackupSucc = $false
-                            }
-                        }
-
-                        else {
-                            ## 7-zip compression with shortdate configured and no need for a number appended.
-                            try {
-                                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
-                                $BackupSucc = $true
-                            }
-                            catch {
-                                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                                $BackupSucc = $false
-                            }
-                        }
+                        ShortDateFileNo($WorkDir,'.*.*')
                     }
 
                     ## If not using 7zip's split file feature with short dates.
@@ -652,7 +647,8 @@ else {
                     New-Item $Backup -ItemType Directory -Force | Out-Null
                 }
 
-                ## Get the exact name of the backup file and append numbers onto the filename, keeping the extension intact.
+                ## Move With Short Date
+                ## Get the name of the backup file and append numbers onto the filename, keeping the extension intact.
                 If ($ShortDate)
                 {
                     If ($SzSwSplit -like "-v*")
@@ -947,6 +943,9 @@ else {
 
     ## Setting an easier to use variable for computer name of the Hyper-V server.
     $Vs = $Env:ComputerName
+
+    ## For 7zip, replace . dots with - hyphens in the vm name
+    $VmFixed = $Vm.replace(".","-")
 
     ## If a VM list file is configured, get the content of the file, otherwise just get the running VMs.
     ## Clean list if it has empty lines.
