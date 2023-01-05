@@ -241,7 +241,31 @@ else {
                 $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
             } until ($ShortDateExistT -eq $false)
         }
-        $ShortDateNN
+
+        If ($Compress)
+        {
+
+        }
+
+        else {
+            try {
+                Get-ChildItem -Path $ShortDateDir -Filter $Vm -Directory | Rename-Item -NewName ("$ShortDateDir\$ShortDateNN")
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+            }
+
+            If ($WorkDir -ne $Backup)
+            {
+                ## Moving backup folder with shortdate and renaming with number appended.
+                try {
+                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination $ShortDateDir\$ShortDateNN -ErrorAction 'Stop'
+                }
+                catch {
+                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                }
+            }
+        }
     }
     Function OptionsRun
     {
@@ -799,12 +823,12 @@ else {
                     #     } until ($ShortDateExistT -eq $false)
                     # }
 
-                    try {
-                        Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    }
+                    # try {
+                    #     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
+                    # }
+                    # catch {
+                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    # }
                 }
 
                 try {
@@ -855,13 +879,13 @@ else {
                         #     } until ($ShortDateExistT -eq $false)
                         # }
 
-                        ## Moving backup folder with shortdate and append number
-                        try {
-                            Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
-                        }
-                        catch {
-                            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        }
+                        # ## Moving backup folder with shortdate and append number
+                        # try {
+                        #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
+                        # }
+                        # catch {
+                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        # }
                     }
 
                     ## Moving backup folder with shortdate
