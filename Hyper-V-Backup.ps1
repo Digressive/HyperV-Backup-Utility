@@ -250,7 +250,8 @@ else {
                 {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN") "$ShortDateDir\$Vm\*"
+                        $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
                         $BackupSucc = $true
                     }
                     catch {
@@ -262,7 +263,8 @@ else {
                 else {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
-                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN") "$ShortDateDir\$Vm\*"
+                        $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
                         $BackupSucc = $true
                     }
                     catch {
