@@ -228,9 +228,6 @@ else {
     ##
     Function OptionsCleanOld()
     {
-        ## For 7zip, replace . dots with - hyphens in the vm name
-        $VmFixed = $Vm.replace(".","-")
-
         ## Remove previous backup folders. No Keep, No Compress switch
         If ($Null -eq $History -And $Compress -eq $False)
         {
@@ -465,10 +462,6 @@ else {
 
     Function OptionsCompress()
     {
-        ## For 7zip, replace . dots with - hyphens in the vm name
-        $BackupSucc = $false
-        $VmFixed = $Vm.replace(".","-")
-
         ## Remove previous backup files. No Keep, Yes Compress switch
         If ($Compress)
         {
@@ -1117,6 +1110,9 @@ else {
         ##
         ## Display current config ends here.
         ##
+
+        ## For 7zip, replace . dots with - hyphens in the vm name
+        $VmFixed = $Vm.replace(".","-")
 
         ## For Success/Fail stats
         $Succi = 0
