@@ -244,7 +244,45 @@ else {
 
         If ($Compress)
         {
+            If ($Sz -eq $True -AND $7zT -eq $True)
+            {
+                If ($SzSwSplit -like "-v*")
+                {
+                    ## 7-zip compression with shortdate configured and a number appended.
+                    try {
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN") "$ShortDateDir\$Vm\*"
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+                }
+                
+                else {
+                    ## 7-zip compression with shortdate configured and a number appended.
+                    try {
+                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN") "$ShortDateDir\$Vm\*"
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+                }
+            }
 
+            else {
+                ## Windows compression with shortdate configured and a number appended.
+                try {
+                    [io.compression.zipfile]::CreateFromDirectory("$ShortDateDir\$Vm", ("$ShortDateDir\$ShortDateNN"))
+                    $BackupSucc = $true
+                }
+                catch {
+                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    $BackupSucc = $false
+                }
+            }
         }
 
         else {
@@ -266,6 +304,7 @@ else {
                 }
             }
         }
+        $BackupSucc
     }
     Function OptionsRun
     {
@@ -523,14 +562,14 @@ else {
                             # }
 
                             ## 7-zip compression with shortdate configured and a number appened.
-                            try {
-                                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
-                                $BackupSucc = $true
-                            }
-                            catch {
-                                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                                $BackupSucc = $false
-                            }
+                            # try {
+                            #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            #     $BackupSucc = $true
+                            # }
+                            # catch {
+                            #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            #     $BackupSucc = $false
+                            # }
                         }
 
                         else {
@@ -567,14 +606,14 @@ else {
                             # }
 
                             ## 7-zip compression with shortdate configured and a number appened.
-                            try {
-                                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
-                                $BackupSucc = $true
-                            }
-                            catch {
-                                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                                $BackupSucc = $false
-                            }
+                            # try {
+                            #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
+                            #     $BackupSucc = $true
+                            # }
+                            # catch {
+                            #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            #     $BackupSucc = $false
+                            # }
                         }
 
                         ## 7-zip compression with shortdate configured and no need for a number appened.
@@ -629,14 +668,14 @@ else {
                         # }
 
                         ## Windows compression with shortdate configured and a number appened.
-                        try {
-                            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
-                            $BackupSucc = $true
-                        }
-                        catch {
-                            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                            $BackupSucc = $false
-                        }
+                        # try {
+                        #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
+                        #     $BackupSucc = $true
+                        # }
+                        # catch {
+                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        #     $BackupSucc = $false
+                        # }
                     }
 
                     else {
@@ -683,7 +722,8 @@ else {
                     New-Item $Backup -ItemType Directory -Force | Out-Null
                 }
 
-                ## Get the exact name of the backup file and append numbers onto the filename, keeping the extention intact.
+                ## Get the exact name of the backup file and append numbers onto the filename, keeping the extension intact.
+                ## This contains special code to do the shortDate renaming with any 7-zip split files.
                 If ($ShortDate)
                 {
                     If ($SzSwSplit -like "-v*")
