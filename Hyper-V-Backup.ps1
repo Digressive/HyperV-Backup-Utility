@@ -229,9 +229,15 @@ else {
 
     Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
     {
-        Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
+        $ShortDateName = ($VmFixed-$(Get-DateShort))+$ShortDateFilePat
+        $ShortDateT = Test-Path -Path ("$ShortDateDir\$ShortDateName")
+
+        If ($ShortDateT)
+        {
+        Write-Log -Type Info -Evt "(VM:$Vm) Backup $VmFixed-$(Get-DateShort) already exists, appending number"
         $i = 1
         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)+$ShortDateFilePat
+        $ShortDateNN
         $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
 
         If ($ShortDateExistT)
@@ -241,7 +247,7 @@ else {
                 $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
             } until ($ShortDateExistT -eq $false)
         }
-    }
+    }}
     Function OptionsRun
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
@@ -782,8 +788,8 @@ else {
             {
                 $ShortDateT = Test-Path -Path ("$WorkDir\$VmFixed-$(Get-DateShort)")
 
-                If ($ShortDateT)
-                {
+                #If ($ShortDateT)
+                #{
                     ShortDateFileNo($WorkDir,$null)
                     # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                     # $i = 1
@@ -804,7 +810,7 @@ else {
                     # catch {
                     #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
                     # }
-                }
+                #}
 
                 try {
                     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$VmFixed-$(Get-DateShort)")
