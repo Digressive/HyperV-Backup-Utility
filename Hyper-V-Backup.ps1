@@ -232,7 +232,6 @@ else {
         Write-Log -Type Info -Evt "(VM:$Vm) Backup $VmFixed-$(Get-DateShort) already exists, appending number"
         $i = 1
         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)+$ShortDateFilePat
-        $ShortDateNN
         $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
 
         If ($ShortDateExistT)
@@ -242,6 +241,7 @@ else {
                 $ShortDateExistT = Test-Path -Path $ShortDateDir\$ShortDateNN
             } until ($ShortDateExistT -eq $false)
         }
+        $ShortDateExistT
     }
     Function OptionsRun
     {
@@ -786,6 +786,8 @@ else {
                 If ($ShortDateT)
                 {
                     ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat $null
+                    $ShortDateExistT2 = ShortDateFileNo
+                    $ShortDateExistT2
                     # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
                     # $i = 1
                     # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
