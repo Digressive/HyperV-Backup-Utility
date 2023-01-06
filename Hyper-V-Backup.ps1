@@ -676,7 +676,7 @@ else {
                         }
 
                         else {
-                            CompressFiles7zip -CompressDateFormat Get-DateShort
+                            CompressFiles7zip(Get-DateShort)
                             # ## 7-zip compression with shortdate configured and no need for a number appened.
                             # try {
                             #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
@@ -698,7 +698,7 @@ else {
                             ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*"
                         }
 
-                        CompressFiles7zip -CompressDateFormat Get-DateShort
+                        CompressFiles7zip(Get-DateShort)
                         # ## 7-zip compression with shortdate configured and no need for a number appened.
                         # try {
                         #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
@@ -712,7 +712,7 @@ else {
                 }
 
                 else {
-                    CompressFiles7zip -CompressDateFormat Get-DateLong
+                    CompressFiles7zip(Get-DateLong)
                     # ## 7-zip compression with longdate.
                     # try {
                     #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
@@ -741,7 +741,7 @@ else {
                     }
 
                     else {
-                        CompressFilesWin -CompressDateFormat Get-DateShort
+                        CompressFilesWin(Get-DateShort)
 
                         # try {
                         #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
@@ -755,7 +755,7 @@ else {
                 }
 
                 else {
-                    CompressFilesWin -CompressDateFormat Get-DateLong
+                    CompressFilesWin(Get-DateLong)
 
                     # try {
                     #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
