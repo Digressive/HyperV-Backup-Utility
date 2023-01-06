@@ -305,11 +305,12 @@ else {
                 }
             }
         }
+        $BackupSucc | Out-Null
     }
     Function OptionsRun
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
-        $BackupSucc = $false
+        ##$BackupSucc = $false
         $VmFixed = $Vm.replace(".","-")
 
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
@@ -1305,11 +1306,12 @@ else {
                 {
                     Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
                     Start-VM $Vm
+                    Start-Sleep -S 60
                 }
 
                 If ($BackupSucc)
                 {
-                    Start-Sleep -S 60
+                    #Start-Sleep -S 60 ## Testing
                     OptionsRun
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
@@ -1318,7 +1320,7 @@ else {
                 else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
                     $Faili = $Faili+1
-                    Start-Sleep -S 60
+                    #Start-Sleep -S 60
                 }
             }
         }
