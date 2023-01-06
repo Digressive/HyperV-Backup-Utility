@@ -310,14 +310,25 @@ else {
 
     Function ReportRemove($RemoveDir,$RemoveFilePat,$RemoveDirOpt,$RemoveHistory)
     {
+        If ($RemoveDirOpt)
+        {
+            $RemoveDirOptSet = @{Directory = $true}
+        }
+
+        else {
+            $RemoveDirOptSet = @{Directory = $false}
+        }
+
         ## report old files to remove
         If ($LogPathUsr)
         {
-            Get-ChildItem -Path $RemoveDir -Filter $VmFixed+$RemoveFilePat $RemoveDirOpt | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            Get-ChildItem -Path $RemoveDir -Filter $BigFilePath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
         }
 
+        $BigFilePath = $VmFixed+$RemoveFilePat
+
         ## remove old files
-        Get-ChildItem -Path $RemoveDir -Filter $VmFixed+$RemoveFilePat $RemoveDirOpt | Remove-Item -Recurse -Force
+        Get-ChildItem -Path $RemoveDir -Filter $BigFilePath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Remove-Item -Recurse -Force
     }
     Function RemoveOld()
     {
@@ -325,11 +336,10 @@ else {
         If ($Null -eq $History -And $Compress -eq $False)
         {
             Write-Log -Type Info -Evt "(VM:$Vm) Removing previous backups"
-
             ## Remove all previous backup folders
             If ($ShortDate)
             {
-                ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt "-Directory" -RemoveHistory $null
+                ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $null
 
                 ## report old files to remove
                 # If ($LogPathUsr)
@@ -342,14 +352,16 @@ else {
             }
 
             else {
-                ## report old files to remove
-                If ($LogPathUsr)
-                {
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                }
 
-                ## remove old files
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
+                ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $null
+                ## report old files to remove
+                # If ($LogPathUsr)
+                # {
+                #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                # }
+
+                # ## remove old files
+                # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
             }
 
             ## If working directory is configured by user, remove all previous backup folders
@@ -361,25 +373,29 @@ else {
                 {
                     If ($ShortDate)
                     {
-                        ## report old files to remove
-                        If ($LogPathUsr)
-                        {
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                        }
+                        ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $null
 
-                        ## remove old files
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
+                        ## report old files to remove
+                        # If ($LogPathUsr)
+                        # {
+                        #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        # }
+
+                        # ## remove old files
+                        # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
                     }
 
                     else {
-                        ## report old files to remove
-                        If ($LogPathUsr)
-                        {
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                        }
+                        ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $null
 
-                        ## remove old files
-                        Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
+                        ## report old files to remove
+                        # If ($LogPathUsr)
+                        # {
+                        #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                        # }
+
+                        # ## remove old files
+                        # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
                     }
                 }
             }
@@ -394,25 +410,27 @@ else {
                 ## Remove previous backup folders older than the configured number of days.
                 If ($ShortDate)
                 {
+                    ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $History
                     ## report old files to remove
-                    If ($LogPathUsr)
-                    {
-                        Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    }
+                    # If ($LogPathUsr)
+                    # {
+                    #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    # }
 
-                    ## remove old files
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                    # ## remove old files
+                    # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                 }
 
                 else {
+                    ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $History
                     ## report old files to remove
-                    If ($LogPathUsr)
-                    {
-                        Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    }
+                    # If ($LogPathUsr)
+                    # {
+                    #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    # }
 
-                    ## remove old files
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                    # ## remove old files
+                    # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                 }
 
                 ## If working directory is configured by user, remove all previous backup folders older than X configured days.
@@ -423,25 +441,27 @@ else {
                     {
                         If ($ShortDate)
                         {
+                            ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $History
                             ## report old files to remove
-                            If ($LogPathUsr)
-                            {
-                                Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            }
+                            # If ($LogPathUsr)
+                            # {
+                            #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                            # }
 
-                            ## remove old files
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                            # ## remove old files
+                            # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                         }
 
                         else {
+                            ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $History
                             ## report old files to remove
-                            If ($LogPathUsr)
-                            {
-                                Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            }
+                            # If ($LogPathUsr)
+                            # {
+                            #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                            # }
 
-                            ## remove old files
-                            Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
+                            # ## remove old files
+                            # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                         }
                     }
                 }
@@ -490,25 +510,27 @@ else {
                 ## Remove previous compressed backups older than the configured number of days.
                 If ($ShortDate)
                 {
-                    ## report old files to remove
-                    If ($LogPathUsr)
-                    {
-                        Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    }
+                    ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
+                    # ## report old files to remove
+                    # If ($LogPathUsr)
+                    # {
+                    #     Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    # }
 
-                    ## remove old files
-                    Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                    # ## remove old files
+                    # Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                 }
 
                 else {
-                    ## report old files to remove
-                    If ($LogPathUsr)
-                    {
-                        Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    }
+                    ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
+                    # ## report old files to remove
+                    # If ($LogPathUsr)
+                    # {
+                    #     Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                    # }
 
-                    ## remove old files
-                    Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                    # ## remove old files
+                    # Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                 }
 
                 ## If working directory is configured by user, remove previous backup files older than X days.
@@ -519,25 +541,27 @@ else {
                     {
                         If ($ShortDate)
                         {
-                            ## report old files to remove
-                            If ($LogPathUsr)
-                            {
-                                Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            }
+                            ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
+                            # ## report old files to remove
+                            # If ($LogPathUsr)
+                            # {
+                            #     Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                            # }
 
-                            ## remove old files
-                            Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                            # ## remove old files
+                            # Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                         }
 
                         else {
-                            ## report old files to remove
-                            If ($LogPathUsr)
-                            {
-                                Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            }
+                            ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
+                            # ## report old files to remove
+                            # If ($LogPathUsr)
+                            # {
+                            #     Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                            # }
 
-                            ## remove old files
-                            Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
+                            # ## remove old files
+                            # Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                         }
                     }
                 }
