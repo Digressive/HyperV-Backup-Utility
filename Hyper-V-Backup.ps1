@@ -329,14 +329,16 @@ else {
             ## Remove all previous backup folders
             If ($ShortDate)
             {
-                ## report old files to remove
-                If ($LogPathUsr)
-                {
-                    Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                }
+                ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt "-Directory" -RemoveHistory $null
 
-                ## remove old files
-                Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
+                ## report old files to remove
+                # If ($LogPathUsr)
+                # {
+                #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+                # }
+
+                # ## remove old files
+                # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
             }
 
             else {
