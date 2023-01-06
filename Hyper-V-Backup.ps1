@@ -311,7 +311,7 @@ else {
     {
         ## For 7zip, replace . dots with - hyphens in the vm name
         ##$BackupSucc = $false
-        $VmFixed = $Vm.replace(".","-")
+        #$VmFixed = $Vm.replace(".","-")
 
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
         If ($Null -eq $History -And $Compress -eq $False)
@@ -1184,6 +1184,7 @@ else {
         {
             ForEach ($Vm in $Vms)
             {
+                $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
 
@@ -1365,6 +1366,7 @@ else {
             ## Do a regular export of the VMs.
             ForEach ($Vm in $Vms)
             {
+                $VmFixed = $Vm.replace(".","-")
                 $BackupSucc = $false
 
                 try {
