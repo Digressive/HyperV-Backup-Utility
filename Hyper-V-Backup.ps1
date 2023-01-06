@@ -673,7 +673,7 @@ else {
 
                             If ($ShortDateT)
                             {
-                                Write-Log -Type Info -Evt "(VM:$Vm) File $($SplitFile.name) already exists, appending number"
+                                Write-Log -Type Info -Evt "(VM:$Vm) File: $($SplitFile.name) already exists, appending number"
                                 $FileExist = Get-ChildItem -Path "$Backup\$($SplitFile.name)" -File
                                 $i = 1
 
@@ -716,7 +716,7 @@ else {
 
                         If ($ShortDateT)
                         {
-                            Write-Log -Type Info -Evt "(VM:$Vm) File $BackupFileN already exists, appending number"
+                            Write-Log -Type Info -Evt "(VM:$Vm) File: $BackupFileN already exists, appending number"
                             $FileExist = Get-ChildItem -Path $BackupFile -File
                             $i = 1
                             
