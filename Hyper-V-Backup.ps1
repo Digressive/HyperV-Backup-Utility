@@ -164,17 +164,17 @@ else {
     }
 
     ## Function to get date in specific format.
-    Function Get-DateFormat
+    Function Get-DateFormat()
     {
         Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     }
 
-    Function Get-DateShort
+    Function Get-DateShort()
     {
         Get-Date -Format "yyyy-MM-dd"
     }
 
-    Function Get-DateLong
+    Function Get-DateLong()
     {
         Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
     }
@@ -307,7 +307,8 @@ else {
         }
         $BackupSucc | Out-Null
     }
-    Function OptionsRun
+
+    Function RemoveOld()
     {
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
         If ($Null -eq $History -And $Compress -eq $False)
@@ -528,7 +529,13 @@ else {
                     }
                 }
             }
+        }
+    }
 
+    Function OptionsRun()
+    {
+        If ($Compress)
+        {
             ## If -Compress and -Sz are configured AND 7-zip is installed - compress the backup folder, if it isn't fallback to Windows compression.
             If ($Sz -eq $True -AND $7zT -eq $True)
             {
@@ -633,7 +640,7 @@ else {
                 }
             }
 
-            ## Remove the VMs export folder.
+            ## After being compressed, if success remove the VMs export folder.
             If ($BackupSucc)
             {
                 Get-ChildItem -Path $WorkDir -Filter "$Vm" -Directory | Remove-Item -Recurse -Force
@@ -1203,6 +1210,7 @@ else {
                 If ($BackupSucc)
                 {
                     #Start-Sleep -S 60 ## Testing
+                    RemoveOld
                     OptionsRun
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
@@ -1272,6 +1280,7 @@ else {
 
                 If ($BackupSucc)
                 {
+                    RemoveOld
                     OptionsRun
                     Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
