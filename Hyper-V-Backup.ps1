@@ -344,31 +344,6 @@ else {
             $BackupSucc = $false
         }
 
-        # If ($ShortDate)
-        # {
-        #     ## 7-zip compression with shortdate
-        #     try {
-        #         & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
-        #         $BackupSucc = $true
-        #     }
-        #     catch {
-        #         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-        #         $BackupSucc = $false
-        #     }
-        # }
-
-        # else {
-        #     ## 7-zip compression with longdate
-        #     try {
-        #         & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
-        #         $BackupSucc = $true
-        #     }
-        #     catch {
-        #         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-        #         $BackupSucc = $false
-        #     }
-        # }
-
         $BackupSucc | Out-Null
     }
 
@@ -387,31 +362,6 @@ else {
             $BackupSucc = $false
         }
 
-        # If ($ShortDate)
-        # {
-        #     ## Windows compression with shortdate
-        #     try {
-        #         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
-        #         $BackupSucc = $true
-        #     }
-        #     catch {
-        #         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-        #         $BackupSucc = $false
-        #     }
-        # }
-
-        # else {
-        #     ## Windows compression with longdate
-        #     try {
-        #         [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
-        #         $BackupSucc = $true
-        #     }
-        #     catch {
-        #         $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-        #         $BackupSucc = $false
-        #     }
-        # }
-
         $BackupSucc | Out-Null
     }
 
@@ -425,28 +375,10 @@ else {
             If ($ShortDate)
             {
                 ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $null
-
-                ## report old files to remove
-                # If ($LogPathUsr)
-                # {
-                #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                # }
-
-                # ## remove old files
-                # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
             }
 
             else {
-
                 ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $null
-                ## report old files to remove
-                # If ($LogPathUsr)
-                # {
-                #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                # }
-
-                # ## remove old files
-                # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
             }
 
             ## If working directory is configured by user, remove all previous backup folders
@@ -459,28 +391,10 @@ else {
                     If ($ShortDate)
                     {
                         ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $null
-
-                        ## report old files to remove
-                        # If ($LogPathUsr)
-                        # {
-                        #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                        # }
-
-                        # ## remove old files
-                        # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Remove-Item -Recurse -Force
                     }
 
                     else {
                         ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $null
-
-                        ## report old files to remove
-                        # If ($LogPathUsr)
-                        # {
-                        #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                        # }
-
-                        # ## remove old files
-                        # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Remove-Item -Recurse -Force
                     }
                 }
             }
@@ -496,26 +410,10 @@ else {
                 If ($ShortDate)
                 {
                     ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $History
-                    ## report old files to remove
-                    # If ($LogPathUsr)
-                    # {
-                    #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    # }
-
-                    # ## remove old files
-                    # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                 }
 
                 else {
                     ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $History
-                    ## report old files to remove
-                    # If ($LogPathUsr)
-                    # {
-                    #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    # }
-
-                    # ## remove old files
-                    # Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                 }
 
                 ## If working directory is configured by user, remove all previous backup folders older than X configured days.
@@ -527,26 +425,10 @@ else {
                         If ($ShortDate)
                         {
                             ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*" -RemoveDirOpt $true -RemoveHistory $History
-                            ## report old files to remove
-                            # If ($LogPathUsr)
-                            # {
-                            #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            # }
-
-                            # ## remove old files
-                            # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                         }
 
                         else {
                             ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*" -RemoveDirOpt $true -RemoveHistory $History
-                            ## report old files to remove
-                            # If ($LogPathUsr)
-                            # {
-                            #     Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            # }
-
-                            # ## remove old files
-                            # Get-ChildItem -Path $Backup -Filter "$VmFixed-*-*-*_*-*-*" -Directory | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Recurse -Force
                         }
                     }
                 }
@@ -596,26 +478,10 @@ else {
                 If ($ShortDate)
                 {
                     ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
-                    # ## report old files to remove
-                    # If ($LogPathUsr)
-                    # {
-                    #     Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    # }
-
-                    # ## remove old files
-                    # Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                 }
 
                 else {
                     ReportRemove -RemoveDir $WorkDir -RemoveFilePat "-*-*-*_*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
-                    # ## report old files to remove
-                    # If ($LogPathUsr)
-                    # {
-                    #     Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                    # }
-
-                    # ## remove old files
-                    # Get-ChildItem -Path "$WorkDir\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                 }
 
                 ## If working directory is configured by user, remove previous backup files older than X days.
@@ -627,26 +493,10 @@ else {
                         If ($ShortDate)
                         {
                             ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
-                            # ## report old files to remove
-                            # If ($LogPathUsr)
-                            # {
-                            #     Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            # }
-
-                            # ## remove old files
-                            # Get-ChildItem -Path "$Backup\$VmFixed-*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                         }
 
                         else {
                             ReportRemove -RemoveDir $Backup -RemoveFilePat "-*-*-*_*-*-*.*" -RemoveDirOpt $false -RemoveHistory $History
-                            # ## report old files to remove
-                            # If ($LogPathUsr)
-                            # {
-                            #     Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
-                            # }
-
-                            # ## remove old files
-                            # Get-ChildItem -Path "$Backup\$VmFixed-*-*-*_*-*-*.*" | Where-Object CreationTime -lt (Get-Date).AddDays(-$History) | Remove-Item -Force
                         }
                     }
                 }
@@ -678,15 +528,6 @@ else {
 
                         else {
                             CompressFiles7zip(Get-DateShort)
-                            # ## 7-zip compression with shortdate configured and no need for a number appened.
-                            # try {
-                            #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
-                            #     $BackupSucc = $true
-                            # }
-                            # catch {
-                            #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                            #     $BackupSucc = $false
-                            # }
                         }
                     }
 
@@ -700,29 +541,11 @@ else {
                         }
 
                         CompressFiles7zip(Get-DateShort)
-                        # ## 7-zip compression with shortdate configured and no need for a number appened.
-                        # try {
-                        #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
-                        #     $BackupSucc = $true
-                        # }
-                        # catch {
-                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        #     $BackupSucc = $false
-                        # }
                     }
                 }
 
                 else {
                     CompressFiles7zip(Get-DateLong)
-                    # ## 7-zip compression with longdate.
-                    # try {
-                    #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
-                    #     $BackupSucc = $true
-                    # }
-                    # catch {
-                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    #     $BackupSucc = $false
-                    # }
                 }
             }
 
@@ -730,7 +553,6 @@ else {
             ## This is also the "fallback" windows compression code.
             else {
                 Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
-                #Add-Type -AssemblyName "system.io.compression.filesystem"
 
                 If ($ShortDate)
                 {
@@ -743,29 +565,11 @@ else {
 
                     else {
                         CompressFilesWin(Get-DateShort)
-
-                        # try {
-                        #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
-                        #     $BackupSucc = $true
-                        # }
-                        # catch {
-                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        #     $BackupSucc = $false
-                        # }
                     }
                 }
 
                 else {
                     CompressFilesWin(Get-DateLong)
-
-                    # try {
-                    #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
-                    #     $BackupSucc = $true
-                    # }
-                    # catch {
-                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    #     $BackupSucc = $false
-                    # }
                 }
             }
 
@@ -1233,7 +1037,7 @@ else {
                     $BackupSucc = $false
                 }
 
-                #Check for VM running
+                ## Check for VM running
                 If (Get-VM | Where-Object {$_.State -eq 'Running'})
                 {
                     $VMwasRunning = $true
