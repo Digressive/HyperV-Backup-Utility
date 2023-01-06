@@ -1114,7 +1114,7 @@ else {
 
                 else {
                     $VMwasRunning = $false
-                    Write-Log -Type Err -Evt "(VM:$Vm) VM not running"
+                    Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
                 }
 
                 ##
@@ -1212,7 +1212,7 @@ else {
                     #Start-Sleep -S 60 ## Testing
                     RemoveOld
                     OptionsRun
-                    Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
+                    Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
 
@@ -1282,7 +1282,7 @@ else {
                 {
                     RemoveOld
                     OptionsRun
-                    Write-Log -Type Info -Evt "(VM:$Vm) Backup Successful"
+                    Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
 
