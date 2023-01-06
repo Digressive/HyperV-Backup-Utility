@@ -319,17 +319,81 @@ else {
             $RemoveDirOptSet = @{Directory = $false}
         }
 
+        $RemoveFullPath = $VmFixed+$RemoveFilePat
+
         ## report old files to remove
         If ($LogPathUsr)
         {
-            Get-ChildItem -Path $RemoveDir -Filter $BigFilePath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
         }
 
-        $BigFilePath = $VmFixed+$RemoveFilePat
-
         ## remove old files
-        Get-ChildItem -Path $RemoveDir -Filter $BigFilePath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Remove-Item -Recurse -Force
+        Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistorySet) | Remove-Item -Recurse -Force
     }
+
+    Function CompressFiles7zip()
+    {
+        If ($ShortDate)
+        {
+            ## 7-zip compression with shortdate
+            try {
+                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateShort)") "$WorkDir\$Vm\*"
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+
+        else {
+            ## 7-zip compression with longdate
+            try {
+                & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$(Get-DateLong)") "$WorkDir\$Vm\*"
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+
+        $BackupSucc | Out-Null
+    }
+
+    Function CompressFilesWin()
+    {
+        Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
+        Add-Type -AssemblyName "system.io.compression.filesystem"
+
+        If ($ShortDate)
+        {
+            ## Windows compression with shortdate
+            try {
+                [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+
+        else {
+            ## Windows compression with longdate
+            try {
+                [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
+                $BackupSucc = $true
+            }
+            catch {
+                $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                $BackupSucc = $false
+            }
+        }
+
+        $BackupSucc | Out-Null
+    }
+
     Function RemoveOld()
     {
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
@@ -642,7 +706,7 @@ else {
             ## This is also the "fallback" windows compression code.
             else {
                 Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
-                Add-Type -AssemblyName "system.io.compression.filesystem"
+                #Add-Type -AssemblyName "system.io.compression.filesystem"
 
                 If ($ShortDate)
                 {
@@ -654,26 +718,30 @@ else {
                     }
 
                     else {
-                        try {
-                            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
-                            $BackupSucc = $true
-                        }
-                        catch {
-                            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                            $BackupSucc = $false
-                        }
+                        CompressFilesWin
+
+                        # try {
+                        #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateShort).zip"))
+                        #     $BackupSucc = $true
+                        # }
+                        # catch {
+                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        #     $BackupSucc = $false
+                        # }
                     }
                 }
 
                 else {
-                    try {
-                        [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
-                        $BackupSucc = $true
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        $BackupSucc = $false
-                    }
+                    CompressFilesWin
+
+                    # try {
+                    #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$(Get-DateLong).zip"))
+                    #     $BackupSucc = $true
+                    # }
+                    # catch {
+                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                    #     $BackupSucc = $false
+                    # }
                 }
             }
 
