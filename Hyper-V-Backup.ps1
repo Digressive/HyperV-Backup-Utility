@@ -308,6 +308,17 @@ else {
         $BackupSucc | Out-Null
     }
 
+    Function ReportRemove($RemoveDir,$RemoveFilePat,$RemoveDirOpt,$RemoveHistory)
+    {
+        ## report old files to remove
+        If ($LogPathUsr)
+        {
+            Get-ChildItem -Path $RemoveDir -Filter $VmFixed+$RemoveFilePat $RemoveDirOpt | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+        }
+
+        ## remove old files
+        Get-ChildItem -Path $RemoveDir -Filter $VmFixed+$RemoveFilePat $RemoveDirOpt | Remove-Item -Recurse -Force
+    }
     Function RemoveOld()
     {
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
