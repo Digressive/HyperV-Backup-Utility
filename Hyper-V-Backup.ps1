@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 22.06.22
+.VERSION 23.01.xx
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -89,7 +89,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 22.06.22              
+                              Mike Galvin   https://gal.vin                     Version 23.01.xx              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -309,10 +309,6 @@ else {
     }
     Function OptionsRun
     {
-        ## For 7zip, replace . dots with - hyphens in the vm name
-        ##$BackupSucc = $false
-        #$VmFixed = $Vm.replace(".","-")
-
         ## Remove previous backup folders. -Keep switch and -Compress switch are NOT configured.
         If ($Null -eq $History -And $Compress -eq $False)
         {
@@ -549,28 +545,6 @@ else {
                         If ($ShortDateT)
                         {
                             ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*.*"
-                            # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                            # $i = 1
-                            # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            # $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
-
-                            # If ($ShortDateExistT)
-                            # {
-                            #     do {
-                            #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            #         $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*.*"
-                            #     } until ($ShortDateExistT -eq $false)
-                            # }
-
-                            ## 7-zip compression with shortdate configured and a number appened.
-                            # try {
-                            #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
-                            #     $BackupSucc = $true
-                            # }
-                            # catch {
-                            #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                            #     $BackupSucc = $false
-                            # }
                         }
 
                         else {
@@ -593,28 +567,6 @@ else {
                         If ($ShortDateT)
                         {
                             ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*"
-                            # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                            # $i = 1
-                            # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            # $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
-
-                            # If ($ShortDateExistT)
-                            # {
-                            #     do {
-                            #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                            #         $ShortDateExistT = Test-Path -Path "$WorkDir\$ShortDateNN.*"
-                            #     } until ($ShortDateExistT -eq $false)
-                            # }
-
-                            ## 7-zip compression with shortdate configured and a number appened.
-                            # try {
-                            #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$ShortDateNN") "$WorkDir\$Vm\*"
-                            #     $BackupSucc = $true
-                            # }
-                            # catch {
-                            #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                            #     $BackupSucc = $false
-                            # }
                         }
 
                         ## 7-zip compression with shortdate configured and no need for a number appened.
@@ -655,28 +607,6 @@ else {
                     If ($ShortDateT)
                     {
                         ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".zip"
-                        # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                        # $i = 1
-                        # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
-                        # $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-
-                        # If ($ShortDateExistT)
-                        # {
-                        #     do {
-                        #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}.zip" -f $i++)
-                        #         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-                        #     } until ($ShortDateExistT -eq $false)
-                        # }
-
-                        ## Windows compression with shortdate configured and a number appened.
-                        # try {
-                        #     [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$ShortDateNN"))
-                        #     $BackupSucc = $true
-                        # }
-                        # catch {
-                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        #     $BackupSucc = $false
-                        # }
                     }
 
                     else {
@@ -851,25 +781,6 @@ else {
                 If ($ShortDateT)
                 {
                     ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat $null
-                    # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                    # $i = 1
-                    # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                    # $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-
-                    # If ($ShortDateExistT)
-                    # {
-                    #     do {
-                    #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                    #         $ShortDateExistT = Test-Path -Path $WorkDir\$ShortDateNN
-                    #     } until ($ShortDateExistT -eq $false)
-                    # }
-
-                    # try {
-                    #     Get-ChildItem -Path $WorkDir -Filter $Vm -Directory | Rename-Item -NewName ("$WorkDir\$ShortDateNN")
-                    # }
-                    # catch {
-                    #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    # }
                 }
 
                 try {
@@ -906,27 +817,6 @@ else {
                     If ($ShortDateT)
                     {
                         ShortDateFileNo -ShortDateDir $Backup -ShortDateFilePat $null
-                        # Write-Log -Type Info -Evt "(VM:$Vm) File $VmFixed-$(Get-DateShort) already exists, appending number"
-                        # $i = 1
-                        # $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                        # $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
-
-                        # ## If backup folder already exists with same name, append a number
-                        # If ($ShortDateExistT)
-                        # {
-                        #     do {
-                        #         $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++)
-                        #         $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
-                        #     } until ($ShortDateExistT -eq $false)
-                        # }
-
-                        # ## Moving backup folder with shortdate and append number
-                        # try {
-                        #     Get-ChildItem -Path $WorkDir -Filter "$VmFixed-*-*-*" -Directory | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
-                        # }
-                        # catch {
-                        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        # }
                     }
 
                     ## Moving backup folder with shortdate
@@ -968,6 +858,7 @@ else {
 
     else {
         ## Test for Hyper-V feature installed on local machine.
+        ## Old version of Win Serv have a different service name.
         try {
             If ($OSV -eq "6.3.9600")
             {
@@ -1035,7 +926,6 @@ else {
     }
 
     ## Check to see if there are any VMs to process.
-    ## If there are no VMs, then do nothing.
     If ($Vms.count -ne 0)
     {
         ## If the user has not configured the working directory, set it as the backup directory.
@@ -1063,7 +953,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "************ Running with the following config *************."
-        Write-Log -Type Conf -Evt "Utility Version:.........22.06.22"
+        Write-Log -Type Conf -Evt "Utility Version:.........23.01.xx"
         Write-Log -Type Conf -Evt "Hostname:................$Vs."
         Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
 
@@ -1223,8 +1113,8 @@ else {
                 ##
                 ## Copy the VM config files and log if there is an error.
                 ##
-                #Check for VM being in the correct state before continuing
 
+                ## Check for VM being in the correct state before continuing
                 $VmState = Get-Vm -Name $Vm
 
                 If ($VmState.State -ne 'Off' -OR $VmState.State -ne 'Saved' -AND $VmState.Status -ne 'Operating normally')
@@ -1321,7 +1211,7 @@ else {
                 else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
                     $Faili = $Faili+1
-                    #Start-Sleep -S 60
+                    #Start-Sleep -S 60 ## testing
                 }
             }
         }
@@ -1332,6 +1222,7 @@ else {
         ##
         ## Standard export process starts here.
         ##
+
         ## If the -NoPerms switch is NOT set, for each VM check for the existence of a previous export.
         ## If it exists then delete it, otherwise the export will fail.
         else {
@@ -1407,7 +1298,7 @@ else {
         ##
     }
 
-    ## If there are no VMs running, then do nothing.
+    ## If there are no VMs, then do nothing.
     else {
         Write-Log -Type Err -Evt "There are no VMs running to backup"
     }
