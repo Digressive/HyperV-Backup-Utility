@@ -274,6 +274,7 @@ else {
             }
 
             else {
+                Add-Type -AssemblyName "system.io.compression.filesystem"
                 ## Windows compression with shortdate configured and a number appended.
                 try {
                     [io.compression.zipfile]::CreateFromDirectory("$ShortDateDir\$Vm", ("$ShortDateDir\$ShortDateNN"))
