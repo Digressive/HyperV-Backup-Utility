@@ -1017,7 +1017,6 @@ else {
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
-                $VMwasRunning = $false
 
                 ## Test for the existence of a previous VM export. If it exists, delete it.
                 If (Test-Path -Path "$WorkDir\$Vm")
@@ -1140,6 +1139,7 @@ else {
                     Start-VM $Vm
                     Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds"
                     Start-Sleep -S 60
+                    $VMwasRunning = $false
                 }
 
                 If ($BackupSucc)
