@@ -1041,8 +1041,8 @@ else {
                 If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
                 {
                     $VMwasRunning = $true
-                    Write-Log -Type Info -Evt "(VM:$Vm) Stopping VM"
-                    Stop-VM -Name $Vm
+                    Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
+                    Stop-VM -Name $Vm -Save #-Force #Test
                 }
 
                 else {
