@@ -244,14 +244,16 @@ else {
         $BackupSucc | Out-Null
     }
 
-    Function CompressFilesWin($CompressDateFormat)
+    Function CompressFilesWin($CompressDateFormat,$CompressDir,$CompressFileName)
     {
-        Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
         Add-Type -AssemblyName "system.io.compression.filesystem"
 
+        $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## Windows compression with shortdate
         try {
-            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$($CompressDateFormat).zip"))
+            #[io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$($CompressDateFormat).zip"))
+            [io.compression.zipfile]::CreateFromDirectory("$CompressDir\$Vm", ("$CompressDir\$CompressFileNameSet.zip"))
+            #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
             $BackupSucc = $true
         }
         catch {
@@ -312,10 +314,15 @@ else {
             }
 
             else {
-                Add-Type -AssemblyName "system.io.compression.filesystem"
+                #Add-Type -AssemblyName "system.io.compression.filesystem"
                 ## Windows compression with shortdate configured and a number appended.
                 try {
-                    [io.compression.zipfile]::CreateFromDirectory("$ShortDateDir\$Vm", ("$ShortDateDir\$ShortDateNN"))
+                    #[io.compression.zipfile]::CreateFromDirectory("$ShortDateDir\$Vm", ("$ShortDateDir\$ShortDateNN"))
+                    $ShortDateNNWinFix = $ShortDateNN.TrimEnd(".zip")
+                    Write-host "hello2 $ShortDateNN.Basename"
+                    $ShortDateDir
+                    $ShortDateNNWinFix
+                    CompressFilesWin -CompressDir $ShortDateDir -CompressFileName $ShortDateNNWinFix
                     $BackupSucc = $true
                 }
                 catch {
@@ -569,12 +576,14 @@ else {
                     }
 
                     else {
-                        CompressFilesWin(Get-DateShort)
+                        #CompressFilesWin(Get-DateShort)
+                        CompressFilesWin(Get-DateShort) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                     }
                 }
 
                 else {
-                    CompressFilesWin(Get-DateLong)
+                    #CompressFilesWin(Get-DateLong)
+                    CompressFilesWin(Get-DateLong) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                 }
             }
 
