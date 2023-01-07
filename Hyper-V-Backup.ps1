@@ -1042,7 +1042,7 @@ else {
                 {
                     $VMwasRunning = $true
                     Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
-                    Stop-VM -Name $Vm -Save #-Force #Test
+                    Stop-VM -Name $Vm -Save
                 }
 
                 else {
@@ -1061,7 +1061,7 @@ else {
                 {
                     do {
                         Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
-                        Start-Sleep -S 6 #Test
+                        Start-Sleep -S 60
                     } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
                 }
 
@@ -1138,7 +1138,7 @@ else {
                     Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
                     Start-VM $Vm
                     Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds..."
-                    Start-Sleep -S 6 #Test
+                    Start-Sleep -S 60
                 }
 
                 If ($BackupSucc)
