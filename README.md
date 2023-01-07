@@ -52,6 +52,10 @@ $creds.Password | ConvertFrom-SecureString | Set-Content c:\scripts\ps-script-pw
 
 After running the commands, you will have a text file containing the encrypted password. When configuring the -Pwd switch enter the path and file name of this file.
 
+## Restoring a Virtual Machine
+
+Use the regular Hyper-V 'import' function. **examples**
+
 ## Configuration
 
 Here’s a list of all the command line switches and example configurations.
@@ -72,6 +76,7 @@ Here’s a list of all the command line switches and example configurations.
 | -LogRotate | Remove logs produced by the utility older than X days | [number] |
 | -NoBanner | Use this option to hide the ASCII art title in the console. | N/A |
 | -Help | Display usage information. No arguments also displays help. | N/A |
+| -Webhook | The txt file containing the URI for a webhook to send the log file to. | [path\]webhook.txt |
 | -Subject | Specify a subject line. If you leave this blank the default subject will be used | "'[Server: Notification]'" |
 | -SendTo | The e-mail address the log should be sent to. For multiple address, separate with a comma. | [example@contoso.com] |
 | -From | The e-mail address the log should be sent from. | [example@contoso.com] |
