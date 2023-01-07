@@ -279,7 +279,7 @@ else {
 
         If ($Compress)
         {
-            If ($Sz -eq $True -AND $7zT -eq $True)
+            If ($Sz -eq $True -AND $7zT -eq $True) #Test might not need to be here at all! This whole block
             {
                 If ($SzSwSplit -like "-v*")
                 {
@@ -287,9 +287,7 @@ else {
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
                         #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
-                        $ShortDateDir
-                        $ShortDateNN7zFix
-                        #CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
+                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
                     catch {
