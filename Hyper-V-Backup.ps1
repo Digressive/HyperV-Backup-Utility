@@ -76,6 +76,7 @@ Param(
     [switch]$Sz,
     [switch]$ShortDate,
     [switch]$Help,
+    [switch]$LowDisk,
     [switch]$NoBanner)
 
 If ($NoBanner -eq $False)
@@ -104,6 +105,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
+    Use -LowDisk to remove old backups before new ones are created. For low disk space situations.
 
     -NoPerms should only be used when a regular backup cannot be performed.
     Please note: this will cause the VMs to shutdown during the backup process.
@@ -929,6 +931,11 @@ else {
             Write-Log -Type Conf -Evt "-ShortDate switch:.......$ShortDate."
         }
 
+        If ($LowDisk)
+        {
+            Write-Log -Type Conf -Evt "-LowDisk switch:.........$LowDisk."
+        }
+
         If ($Compress)
         {
             Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
@@ -1019,6 +1026,12 @@ else {
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
+
+                ## Remove old backups if -LowDisk is configured
+                If ($LowDisk)
+                {
+                    RemoveOld
+                }
 
                 ## Test for the existence of a previous VM export. If it exists, delete it.
                 If (Test-Path -Path "$WorkDir\$Vm")
@@ -1145,7 +1158,12 @@ else {
 
                 If ($BackupSucc)
                 {
-                    RemoveOld
+                    ## Remove old backups if -LowDisk is NOT configured
+                    If ($LowDisk -eq $false)
+                    {
+                        RemoveOld
+                    }
+
                     OptionsRun
                     Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
@@ -1202,6 +1220,12 @@ else {
                 $VmFixed = $Vm.replace(".","-")
                 $BackupSucc = $false
 
+                ## Remove old backups if -LowDisk is configured
+                If ($LowDisk)
+                {
+                    RemoveOld
+                }
+
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
                     $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
@@ -1214,7 +1238,12 @@ else {
 
                 If ($BackupSucc)
                 {
-                    RemoveOld
+                    ## Remove old backups if -LowDisk is NOT configured
+                    If ($LowDisk -eq $false)
+                    {
+                        RemoveOld
+                    }
+
                     OptionsRun
                     Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
