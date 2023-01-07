@@ -226,6 +226,41 @@ else {
     ##
     ## Start of backup Options function
     ##
+
+    Function CompressFiles7zip($CompressDateFormat,$CompressDir,$CompressFileName)
+    {
+        ## 7-zip compression with shortdate
+        try {
+            #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$($CompressDateFormat)") "$WorkDir\$Vm\*" #test
+            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileName") "$CompressDir\$Vm\*"
+            $BackupSucc = $true
+        }
+        catch {
+            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+            $BackupSucc = $false
+        }
+
+        $BackupSucc | Out-Null
+    }
+
+    Function CompressFilesWin($CompressDateFormat)
+    {
+        Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
+        Add-Type -AssemblyName "system.io.compression.filesystem"
+
+        ## Windows compression with shortdate
+        try {
+            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$($CompressDateFormat).zip"))
+            $BackupSucc = $true
+        }
+        catch {
+            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+            $BackupSucc = $false
+        }
+
+        $BackupSucc | Out-Null
+    }
+
     Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
     {
         Write-Log -Type Info -Evt "(VM:$Vm) Backup $VmFixed-$(Get-DateShort) already exists, appending number"
@@ -250,7 +285,8 @@ else {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
+                        #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
+                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
                     catch {
@@ -263,7 +299,8 @@ else {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
+                        #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
+                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
                     catch {
@@ -330,39 +367,6 @@ else {
 
         ## remove old files
         Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Remove-Item -Recurse -Force
-    }
-
-    Function CompressFiles7zip($CompressDateFormat)
-    {
-        ## 7-zip compression with shortdate
-        try {
-            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$($CompressDateFormat)") "$WorkDir\$Vm\*"
-            $BackupSucc = $true
-        }
-        catch {
-            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-            $BackupSucc = $false
-        }
-
-        $BackupSucc | Out-Null
-    }
-
-    Function CompressFilesWin($CompressDateFormat)
-    {
-        Write-Log -Type Info -Evt "(VM:$Vm) Compressing backup using Windows compression"
-        Add-Type -AssemblyName "system.io.compression.filesystem"
-
-        ## Windows compression with shortdate
-        try {
-            [io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$($CompressDateFormat).zip"))
-            $BackupSucc = $true
-        }
-        catch {
-            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-            $BackupSucc = $false
-        }
-
-        $BackupSucc | Out-Null
     }
 
     Function RemoveOld()
@@ -527,7 +531,7 @@ else {
                         }
 
                         else {
-                            CompressFiles7zip(Get-DateShort)
+                            CompressFiles7zip(Get-DateShort) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                         }
                     }
 
@@ -540,12 +544,12 @@ else {
                             ShortDateFileNo -ShortDateDir $WorkDir -ShortDateFilePat ".*"
                         }
 
-                        CompressFiles7zip(Get-DateShort)
+                        CompressFiles7zip(Get-DateShort) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                     }
                 }
 
                 else {
-                    CompressFiles7zip(Get-DateLong)
+                    CompressFiles7zip(Get-DateLong) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                 }
             }
 
