@@ -229,10 +229,11 @@ else {
 
     Function CompressFiles7zip($CompressDateFormat,$CompressDir,$CompressFileName)
     {
+        $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## 7-zip compression with shortdate
         try {
             #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$($CompressDateFormat)") "$WorkDir\$Vm\*" #test
-            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileName") "$CompressDir\$Vm\*"
+            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
             $BackupSucc = $true
         }
         catch {
@@ -286,7 +287,9 @@ else {
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
                         #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
-                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
+                        $ShortDateDir
+                        $ShortDateNN7zFix
+                        #CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
                     catch {
