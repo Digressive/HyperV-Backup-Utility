@@ -232,7 +232,6 @@ else {
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## 7-zip compression with shortdate
         try {
-            #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$WorkDir\$VmFixed-$($CompressDateFormat)") "$WorkDir\$Vm\*" #test
             & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
             $BackupSucc = $true
         }
@@ -251,9 +250,7 @@ else {
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## Windows compression with shortdate
         try {
-            #[io.compression.zipfile]::CreateFromDirectory("$WorkDir\$Vm", ("$WorkDir\$VmFixed-$($CompressDateFormat).zip"))
             [io.compression.zipfile]::CreateFromDirectory("$CompressDir\$Vm", ("$CompressDir\$CompressFileNameSet.zip"))
-            #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
             $BackupSucc = $true
         }
         catch {
@@ -281,14 +278,13 @@ else {
 
         If ($Compress)
         {
-            If ($Sz -eq $True -AND $7zT -eq $True) #Test might not need to be here at all! This whole block
+            If ($Sz -eq $True -AND $7zT -eq $True)
             {
                 If ($SzSwSplit -like "-v*")
                 {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
                         CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
@@ -302,7 +298,6 @@ else {
                     ## 7-zip compression with shortdate configured and a number appended.
                     try {
                         $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        #& "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$ShortDateDir\$ShortDateNN7zFix") "$ShortDateDir\$Vm\*"
                         CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                         $BackupSucc = $true
                     }
@@ -314,14 +309,9 @@ else {
             }
 
             else {
-                #Add-Type -AssemblyName "system.io.compression.filesystem"
                 ## Windows compression with shortdate configured and a number appended.
                 try {
-                    #[io.compression.zipfile]::CreateFromDirectory("$ShortDateDir\$Vm", ("$ShortDateDir\$ShortDateNN"))
                     $ShortDateNNWinFix = $ShortDateNN.TrimEnd(".zip")
-                    Write-host "hello2 $ShortDateNN.Basename"
-                    $ShortDateDir
-                    $ShortDateNNWinFix
                     CompressFilesWin -CompressDir $ShortDateDir -CompressFileName $ShortDateNNWinFix
                     $BackupSucc = $true
                 }
@@ -576,13 +566,11 @@ else {
                     }
 
                     else {
-                        #CompressFilesWin(Get-DateShort)
                         CompressFilesWin(Get-DateShort) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                     }
                 }
 
                 else {
-                    #CompressFilesWin(Get-DateLong)
                     CompressFilesWin(Get-DateLong) -CompressDir $WorkDir -CompressFileName "$VmFixed-$CompressDateFormat"
                 }
             }
@@ -694,7 +682,7 @@ else {
                                 }
                             }
 
-                            ## Move with shortdate and appened number
+                            ## Move with shortdate and appended number
                             try {
                                 Get-ChildItem -Path $BackupFile | Move-Item -Destination $Backup\$ShortDateNN -ErrorAction 'Stop'
                             }
@@ -1265,7 +1253,7 @@ else {
 
     If ($Null -ne $LogHistory)
     {
-        ## Cleanup logs.
+        ## Clean up logs.
         Write-Log -Type Info -Evt "Deleting logs older than: $LogHistory days"
         Get-ChildItem -Path "$LogPath\Hyper-V-Backup_*" -File | Where-Object CreationTime -lt (Get-Date).AddDays(-$LogHistory) | Remove-Item -Recurse
     }
