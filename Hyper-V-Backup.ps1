@@ -225,8 +225,19 @@ else {
         }
     }
 
+    Function UpdateCheck()
+    {
+        $ScriptVersion = "23.01.xx"
+        $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
+        $SourceCheck = Invoke-RestMethod -uri "$RawSource"
+        $VerCheck = Select-String -Pattern ".VERSION $ScriptVersion" -InputObject $SourceCheck
+        If ($null -eq $VerCheck)
+        {
+            Write-Log -Type Conf -Evt "*** There is an update available. ***"
+        }
+    }
     ##
-    ## Start of backup Options function
+    ## Start of backup Options functions
     ##
 
     Function CompressFiles7zip($CompressDateFormat,$CompressDir,$CompressFileName)
@@ -785,7 +796,7 @@ else {
         }
     }
     ##
-    ## End of backup Options function
+    ## End of backup Options functions
     ##
 
     ## getting Windows Version info
@@ -896,8 +907,11 @@ else {
         ##
         ## Display the current config and log if configured.
         ##
+
+        ## Run Update checker function
         Write-Log -Type Conf -Evt "************ Running with the following config *************."
         Write-Log -Type Conf -Evt "Utility Version:.........23.01.xx"
+        UpdateCheck
         Write-Log -Type Conf -Evt "Hostname:................$Vs."
         Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
 
