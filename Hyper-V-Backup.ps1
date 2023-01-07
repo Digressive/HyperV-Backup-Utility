@@ -70,6 +70,9 @@ Param(
     [alias("Pwd")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $SmtpPwd,
+    [Alias("Webhook")]
+    [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
+    [string]$Webh,
     [switch]$UseSsl,
     [switch]$NoPerms,
     [switch]$Compress,
@@ -117,6 +120,9 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     To output a log: -L [path\].
     To remove logs produced by the utility older than X days: -LogRotate [number].
     Run with no ASCII banner: -NoBanner
+
+    To send the log to a webhook on job completion:
+    Specify a txt file containing the webhook URI with -Webhook [path\]webhook.txt
 
     To use the 'email log' function:
     Specify the subject line with -Subject ""'[subject line]'"" If you leave this blank a default subject will be used
@@ -854,6 +860,12 @@ else {
             Exit
         }
 
+        If ($Null -eq $LogPathUsr -And $Webh)
+        {
+            Write-Log -Type Err -Evt "You must specify -L [path\] to use send the log to a webhook."
+            Exit
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -978,6 +990,11 @@ else {
         If ($LogPathUsr)
         {
             Write-Log -Type Conf -Evt "Logs directory:..........$LogPathUsr."
+        }
+
+        If ($Webh)
+        {
+            Write-Log -Type Conf -Evt "Webhook file:............$Webh."
         }
 
         If ($MailTo)
@@ -1353,5 +1370,27 @@ else {
         }
     }
     ## End of Email block
+
+    ## Webhook block
+    If ($Webh)
+    {
+        $WebHookUri = Get-Content $Webh
+        $WebHookArr = @()
+
+        $title       = 'Hyper-V Backup Utility'
+        $description = Get-Content -Path $Log | Out-String
+
+        $WebHookObj = [PSCustomObject]@{
+            title = $title
+            description = $description
+        }
+
+        $WebHookArr += $WebHookObj
+        $payload = [PSCustomObject]@{
+            embeds = $WebHookArr
+        }
+
+        Invoke-RestMethod -Uri $WebHookUri -Body ($payload | ConvertTo-Json -Depth 2) -Method Post -ContentType 'application/json'
+    }
 }
 ## End
