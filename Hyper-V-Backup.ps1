@@ -1038,7 +1038,7 @@ else {
                 }
 
                 ## Check for VM running
-                If (Get-VM | Where-Object {$_.State -eq 'Running'})
+                If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
                 {
                     $VMwasRunning = $true
                     Write-Log -Type Info -Evt "(VM:$Vm) Stopping VM"
@@ -1061,7 +1061,7 @@ else {
                 {
                     do {
                         Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
-                        Start-Sleep -S 60
+                        Start-Sleep -S 6 #Test
                     } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
                 }
 
@@ -1137,14 +1137,12 @@ else {
                 {
                     Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
                     Start-VM $Vm
-                    Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds"
-                    Start-Sleep -S 60
-                    $VMwasRunning = $false
+                    Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds..."
+                    Start-Sleep -S 6 #Test
                 }
 
                 If ($BackupSucc)
                 {
-                    #Start-Sleep -S 60 ## Testing
                     RemoveOld
                     OptionsRun
                     Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
@@ -1154,7 +1152,6 @@ else {
                 else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
                     $Faili = $Faili+1
-                    #Start-Sleep -S 60 ## testing
                 }
             }
         }
