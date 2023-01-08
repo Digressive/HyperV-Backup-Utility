@@ -20,12 +20,13 @@ If you’d like to contact me, please leave a comment, send me a [tweet or DM](h
 
 ## Features and Requirements
 
-* The utility is designed to be run on a Hyper-V host.
+* Designed to be run on a Hyper-V host.
 * The Hyper-V host must have the Hyper-V management PowerShell modules installed.
-* The utility can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export to.
-* The utility supports Hyper-V hosts in a clustered configuration.
-* The utility requires at least Windows PowerShell 5.0
-* The utility has been tested on Windows 11, Windows 10, Windows Server 2022, Windows Server 2019 and Windows Server 2016.
+* Can be used to backup VMs to a device which the Hyper-V host does not have permission to run a regular export to.
+* Supports Hyper-V hosts in a clustered configuration.
+* The utility requires at least Windows PowerShell 5.0.
+* Tested on Windows 11, Windows 10, Windows Server 2022, Windows Server 2019 and Windows Server 2016.
+* The backup log can be sent via email and/or webhook.
 
 ## 7-Zip support
 
@@ -37,7 +38,7 @@ The -NoPerms switch is intended as a workaround when used in an environment wher
 
 Hyper-V’s export operation requires that the computer account in Active Directory have access to the location where the exports are being stored. I recommend creating an Active Directory group for the Hyper-V hosts and then giving the group the required ‘Full Control’ file and share permissions.
 
-When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed, so the VM will be shut down for the duration of the copy process.
+When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed. Due to this the script will put the VM in a 'Saved' state so the files can be copied. Previously the VM would be shutdown but this is a faster and safer method as the VM does not require any integrations to be put in a saved state.
 
 ## Generating A Password File
 
@@ -54,7 +55,14 @@ After running the commands, you will have a text file containing the encrypted p
 
 ## Restoring a Virtual Machine
 
-Use the regular Hyper-V 'import' function. **examples**
+The easiest and quickest way to restore a Virtual Machine that has been backed up using this script is to use Hyper-V's native import function.
+
+1. Copy the backup of the VM you want to restore to a location on the VM host server that the VM should run from. If the backup is compressed, uncompress the file.
+2. In the Hyper-V Manager, right-click on the VM host and select 'Import Virtual Machine'.
+3. Browse to the location of the VM backup folder and click Next.
+4. Select the VM you want to restore.
+5. Select 'Register the virtual machine in-place' option.
+6. The VM will be registered in Hyper-V and available for use.
 
 ## Configuration
 
