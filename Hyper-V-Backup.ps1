@@ -921,122 +921,122 @@ else {
         ##
 
         ## Run Update checker function
-        Write-Log -Type Conf -Evt "************ Running with the following config *************."
-        Write-Log -Type Conf -Evt "Utility Version:.........23.01.09"
+        Write-Log -Type Conf -Evt "--- Running with the following config ---"
+        Write-Log -Type Conf -Evt "Utility Version: 23.01.09"
         UpdateCheck
-        Write-Log -Type Conf -Evt "Hostname:................$Vs."
-        Write-Log -Type Conf -Evt "Windows Version:.........$OSV."
+        Write-Log -Type Conf -Evt "Hostname: $Vs."
+        Write-Log -Type Conf -Evt "Windows Version: $OSV."
 
         If ($Vms)
         {
-            Write-Log -Type Conf -Evt "No. of VMs:..............$($Vms.count)."
-            Write-Log -Type Conf -Evt "VMs to backup:..........."
+            Write-Log -Type Conf -Evt "No. of VMs: $($Vms.count)."
+            Write-Log -Type Conf -Evt "VMs to backup:"
             ForEach ($Vm in $Vms)
             {
-                Write-Log -Type Conf -Evt ".........................$Vm"
+                Write-Log -Type Conf -Evt "*** $Vm ***"
             }
         }
 
         If ($BackupUsr)
         {
-            Write-Log -Type Conf -Evt "Backup directory:........$BackupUsr."
+            Write-Log -Type Conf -Evt "Backup directory: $BackupUsr."
         }
 
         If ($WorkDirUsr)
         {
-            Write-Log -Type Conf -Evt "Working directory:.......$WorkDirUsr."
+            Write-Log -Type Conf -Evt "Working directory: $WorkDirUsr."
         }
 
         If ($NoPerms)
         {
-            Write-Log -Type Conf -Evt "-NoPerms switch:.........$NoPerms."
+            Write-Log -Type Conf -Evt "-NoPerms switch: $NoPerms."
         }
 
         If ($ShortDate)
         {
-            Write-Log -Type Conf -Evt "-ShortDate switch:.......$ShortDate."
+            Write-Log -Type Conf -Evt "-ShortDate switch: $ShortDate."
         }
 
         If ($LowDisk)
         {
-            Write-Log -Type Conf -Evt "-LowDisk switch:.........$LowDisk."
+            Write-Log -Type Conf -Evt "-LowDisk switch: $LowDisk."
         }
 
         If ($Compress)
         {
-            Write-Log -Type Conf -Evt "-Compress switch:........$Compress."
+            Write-Log -Type Conf -Evt "-Compress switch: $Compress."
         }
 
         If ($Sz)
         {
-            Write-Log -Type Conf -Evt "-Sz switch:..............$Sz."
+            Write-Log -Type Conf -Evt "-Sz switch: $Sz."
         }
 
         If ($Sz)
         {
-            Write-Log -Type Conf -Evt "7-zip installed:.........$7zT."
+            Write-Log -Type Conf -Evt "7-zip installed: $7zT."
         }
 
         If ($SzSwitches)
         {
-            Write-Log -Type Conf -Evt "7-zip Options:...........$SzSwitches."
+            Write-Log -Type Conf -Evt "7-zip Options: $SzSwitches."
         }
 
         If ($Null -ne $History)
         {
-            Write-Log -Type Conf -Evt "Backups to keep:.........$History days"
+            Write-Log -Type Conf -Evt "Backups to keep: $History days"
         }
 
         If ($LogPathUsr)
         {
-            Write-Log -Type Conf -Evt "Logs directory:..........$LogPathUsr."
+            Write-Log -Type Conf -Evt "Logs directory: $LogPathUsr."
         }
 
         If ($Webh)
         {
-            Write-Log -Type Conf -Evt "Webhook file:............$Webh."
+            Write-Log -Type Conf -Evt "Webhook file: $Webh."
         }
 
         If ($MailTo)
         {
-            Write-Log -Type Conf -Evt "E-mail log to:...........$MailTo."
+            Write-Log -Type Conf -Evt "E-mail log to: $MailTo."
         }
 
         If ($MailFrom)
         {
-            Write-Log -Type Conf -Evt "E-mail log from:.........$MailFrom."
+            Write-Log -Type Conf -Evt "E-mail log from: $MailFrom."
         }
 
         If ($MailSubject)
         {
-            Write-Log -Type Conf -Evt "E-mail subject:..........$MailSubject."
+            Write-Log -Type Conf -Evt "E-mail subject: $MailSubject."
         }
 
         If ($SmtpServer)
         {
-            Write-Log -Type Conf -Evt "SMTP server:.............$SmtpServer."
+            Write-Log -Type Conf -Evt "SMTP server: $SmtpServer."
         }
 
         If ($SmtpPort)
         {
-            Write-Log -Type Conf -Evt "SMTP Port:...............$SmtpPort."
+            Write-Log -Type Conf -Evt "SMTP Port: $SmtpPort."
         }
 
         If ($SmtpUser)
         {
-            Write-Log -Type Conf -Evt "SMTP user:...............$SmtpUser."
+            Write-Log -Type Conf -Evt "SMTP user: $SmtpUser."
         }
 
         If ($SmtpPwd)
         {
-            Write-Log -Type Conf -Evt "SMTP pwd file:...........$SmtpPwd."
+            Write-Log -Type Conf -Evt "SMTP pwd file: $SmtpPwd."
         }
 
         If ($SmtpServer)
         {
-            Write-Log -Type Conf -Evt "-UseSSL switch:..........$UseSsl."
+            Write-Log -Type Conf -Evt "-UseSSL switch: $UseSsl."
         }
-        Write-Log -Type Conf -Evt "************************************************************"
+        Write-Log -Type Conf -Evt "---"
         Write-Log -Type Info -Evt "Process started."
         ##
         ## Display current config ends here.
@@ -1377,7 +1377,7 @@ else {
         $WebHookUri = Get-Content $Webh
         $WebHookArr = @()
 
-        $title       = 'Hyper-V Backup Utility'
+        $title       = "Hyper-V Backup Utility $Succi/$($Vms.count) VMs Successful"
         $description = Get-Content -Path $Log | Out-String
 
         $WebHookObj = [PSCustomObject]@{
