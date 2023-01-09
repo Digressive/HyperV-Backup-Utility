@@ -920,10 +920,9 @@ else {
         ## Display the current config and log if configured.
         ##
 
-        ## Run Update checker function
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
         Write-Log -Type Conf -Evt "Utility Version: 23.01.09"
-        UpdateCheck
+        UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
 
