@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.01.09
+.VERSION 23.02.07
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -93,7 +93,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.01.09              
+                              Mike Galvin   https://gal.vin                     Version 23.02.07              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -233,7 +233,7 @@ else {
 
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.01.09"
+        $ScriptVersion = "23.02.07"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
         $SourceCheck = Invoke-RestMethod -uri "$RawSource"
         $VerCheck = Select-String -Pattern ".VERSION $ScriptVersion" -InputObject $SourceCheck
@@ -921,7 +921,7 @@ else {
         ##
 
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.01.09"
+        Write-Log -Type Conf -Evt "Utility Version: 23.02.07"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
@@ -1023,20 +1023,10 @@ else {
 
         If ($SmtpUser)
         {
-            Write-Log -Type Conf -Evt "SMTP user: $SmtpUser."
-        }
-
-        If ($SmtpPwd)
-        {
-            Write-Log -Type Conf -Evt "SMTP pwd file: $SmtpPwd."
-        }
-
-        If ($SmtpServer)
-        {
-            Write-Log -Type Conf -Evt "-UseSSL switch: $UseSsl."
+            Write-Log -Type Conf -Evt "SMTP auth: Configured"
         }
         Write-Log -Type Conf -Evt "---"
-        Write-Log -Type Info -Evt "Process started."
+        Write-Log -Type Info -Evt "Process started"
         ##
         ## Display current config ends here.
         ##
