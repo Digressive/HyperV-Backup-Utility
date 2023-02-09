@@ -1,6 +1,6 @@
 # Hyper-V Backup Utility
 
-Flexible Hyper-V Backup Utility
+## Flexible Hyper-V Backup Utility
 
 For full change log and more information, [visit my site.](https://gal.vin/utils/hyperv-backup-utility/)
 
@@ -101,3 +101,197 @@ Here’s a list of all the command line switches and example configurations.
 ```
 
 This will backup all the VMs running to the backup location specified.
+
+## Change Log
+
+### 2023-02-07: Version 23.02.07
+
+* Removed SMTP authentication details from the 'Config' report. Now it just shows as 'configured' if SMTP user is configured. To be clear: no passwords were ever shown or stored in plain text.
+
+### 2023-01-09: Version 23.01.09
+
+* Added script update checker - shows if an update is available in the log and console.
+* Added VM restore instructions to readme.md.
+* Added "low disk space" mode. -LowDisk switch deletes previous backup files and folders before backup for systems with low disk space.
+* Added webhook option to send log file to.
+* Lot's of refactored code using functions. Simpler, easier to manage. Long overdue.
+* Fixed bug that started VMs that were shutdown.
+* Changed "VM not running" from an error state to an informational state.
+* Changed "Backup Success" to a success state (green text in console).
+* Changed -NoPerms so that VMs are now saved instead of shutdown (safer, faster, does not require Hyper-V integrations)
+
+### 2022-06-22: Version 22.06.22
+
+* Fixed an issue with the code checking for OS version too late.
+
+### 2022-06-18: Version 22.06.18
+
+* Fixed Get-Service check outputting to console.
+* Fixed backup success/fail counter not working with -NoPerms switch.
+
+### 2022-06-17: Version 22.06.17
+
+* Fixed an issue with Windows Server 2012 R2 when checking for the Hyper-V service to be installed and running.
+
+### 2022-06-14: Version 22.06.11
+
+* Fixed [Issue #19 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/19) - All Virtual Hard Disk folders should now be called "Virtual Hard Disks" and not some with the name "VHD".
+* Fixed [Issue #20 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/20) - If -L [path\] not configured then a non fatal error would occur as no log path was specified for the log to be output to.
+* Fixed an issue where a VM would not be backed up if it were in the state "saved" and was present in the user configured VM list text file.
+* Added user feedback - make backup success or fail clear in the log and console.
+* Added user feedback - add "VMs backed up x/x" to email subject for clear success/fail visibility.
+* Added user feedback - Log can now be emailed to multiple addresses.
+* Added checks and balances to help with configuration as I'm very aware that the initial configuration can be troublesome. Running the utility manually is a lot more friendly and step-by-step now.
+* Added -Help to give usage instructions in the terminal. Running the script with no options will also trigger the -help switch.
+* Cleaned user entered paths so that trailing slashes no longer break things or have otherwise unintended results.
+* Added -LogRotate [days] to removed old logs created by the utility.
+* Streamlined config report so non configured options are not shown.
+* Added donation link to the ASCII banner.
+* Cleaned up code, removed unneeded log noise.
+
+### 2022-03-27: Version 22.03.26
+
+* Made a small fix to the 'NoPerms' function: The VM will be left in the state it was found. For example, when a VM is found in an offline state, the script will not start the VM once the backup is complete. In the previous version the VM would be started regardless of what state it was in previously.
+
+### 2022-02-08: Version 22.02.08
+
+* Added fix for potential BSOD on Windows Server 2016 Hyper-V host when exporting VMs using VSS. The change to the registry will only happen if Windows Server 2016 is detected as the Hyper-V host and only if the registry value is in the default state. If it has been configured previously no change will be made. [Issue #17 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/17)
+
+### 2022-01-20: Version 22.01.19
+
+* When using -NoPerms the utility now waits for disk merging to complete before backing up.
+* Utility now ignores blanks lines in VM list file.
+* Added checks for success or failure in the backup, copy/compression process. If it fails none of the previous backups should be removed.
+
+### 2021-12-28: Version 21.12.28
+
+* Put checks in place so if a VM fails to backup the old backup for that VM is not removed and the error is logged.
+
+### 2021-11-12: Version 21.11.09
+
+* Added more logging info, clearer formatting.
+
+### 2021-11-05: Version 21.11.05
+
+* Fixed an error when moving compressed backup files from a working directory.
+* Configured logs path now is created, if it does not exist.
+* Added OS version info.
+* Improved log output, added more information for each stage of the backup.
+
+### 2021-08-10: Version 21.08.10
+
+* Added an option to specify the Port for SMTP communication.
+
+### 2021-07-02: Version 21.07.02
+
+* Fixed many bugs introduced with implementing more 7-zip options. 7-zip options I've tested fully are '-t' archive type, '-p' password and '-v' split files.
+* Implemented and automated a formal testing process.
+
+### 2021-06-14: Version 21.06.14
+
+* Replaced -Sz* specific options with -SzOptions which will support any option that 7-zip supports.
+
+### 2021-06-02: Version 21.06.02
+
+* Fixed an error where file types which are not .zip were not being moved from the working directory to the final backup location.
+
+### 2021-05-30: Version 21.05.30
+
+* Added additional 7-Zip options. -SzSplit to split archives into configuration volumes.
+* Changed existing switches for 7-Zip options. Users must now add an additional hyphen '-' for 7-Zip options. This has been done to better support features that 7-Zip supports.
+* Changed how old files are removed. Users should take extra care if they are storing non back-up files in the backup location. This has been done so that 7-Zip's split function can be supported.
+
+### 2020-07-13: Version 20.07.13
+
+* Added -ShortDate option. This will create backups with only the Year, Month, Day as the file name.
+* Added pass through for 7-Zip options - CPU threads to use and compression level.
+* Added proper error handling so errors are properly reported in the console, log and email.
+* Bug fixes to create folders when paths are configured without the folders existing.
+
+### 2020-02-28: Version 20.02.28 ‘Artifact’
+
+* Fixed e-mail report extra line breaks in Outlook 365, Version 2001.
+* Config report matches design of Image Factory Utility.
+* Improved and simplified code.
+
+### 2020-02-18: Version 2020.02.14 ‘Valentine’
+
+Current known issues:
+
+* E-mail report has extra line breaks in Outlook 365, Version 2001.
+
+New features:
+
+* Refactored code.
+* Fully backwards compatible.
+* Added option to use a working directory to stage backups before moving them to final backup location.
+* Added option to use 7-Zip for backup compression.
+* Added ASCII banner art when run in the console.
+* Added option to disable the ASCII banner art.
+
+### 2019-09-04 v4.5
+
+* Added custom subject line for e-mail.
+
+### 2019-05-26 v4.4
+
+* Added more feedback when the script is used interactively.
+
+### 2018-06-21 v4.3
+
+* Added the ability to specify the VMs to be backed up using a txt file.
+
+### 2018-03-04 v4.2
+
+* Improved logging slightly to be clearer about which VM's previous backups are being deleted.
+
+### 2018-03-03 v4.1
+
+* Added option to compress the VM backups to a zip file. This option will remove the original VM backup.
+* Added option to keep a configurable number of days’ worth of backups, so you can keep a history/archive of previous backups. Every effort has been taken to only remove backup files or folders generated by this utility.
+* Changed the script so that when backup is complete, the VM backup folders/zip files will be have the time and date append to them.
+
+### 2018-01-15 v4.0
+
+* The backup script no longer creates a folder named after the Host server. The VM backups are placed in the root of the specified backup location.
+* Fixed a small issue with logging where the script completes the backup process, then states incorrectly "there are no VMs to backup".
+
+### 2018-01-12 v3.9
+
+* Fixed a small bug that occurred when there were no VMs to backup, the script incorrectly logged an error in exporting the VMs. It now states that that are no VMs to backup.
+
+### 2018-01-12 v3.8
+
+* The script has been tested performing backups of Virtual Machines running on a Hyper-V cluster.
+* Minor update to documentation.
+
+### 2017-10-16 v3.7
+
+* Changed SMTP authentication to require an encrypted password file.
+* Added instructions on how to generate an encrypted password file.
+
+### 2017-10-07 v3.6
+
+* Added necessary information to add the script to the PowerShell Gallery.
+
+### 2017-09-18 v3.5
+
+* Improved the log output to be easier to read.
+
+### 2017-07-22 v3.4
+
+* Improved commenting on the code for documentation purposes.
+* Added authentication and SSL options for e-mail notification.
+
+### 2017-05-20 v3.3
+
+* Added configuration via command line switches.
+* Added option to perform regular online export if destination allows it.
+
+### 2017-04-24 Minor Update
+
+* Cleaned up the formatting and commented sections of the script.
+
+### 2017-04-21 Minor Update
+
+* Added the ability to email the log file when the script completes.
