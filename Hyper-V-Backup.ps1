@@ -1013,12 +1013,7 @@ else {
 
         If ($SmtpServer)
         {
-            Write-Log -Type Conf -Evt "SMTP server: $SmtpServer."
-        }
-
-        If ($SmtpPort)
-        {
-            Write-Log -Type Conf -Evt "SMTP Port: $SmtpPort."
+            Write-Log -Type Conf -Evt "SMTP server: Configured"
         }
 
         If ($SmtpUser)
