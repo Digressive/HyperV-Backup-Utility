@@ -233,7 +233,7 @@ else {
     Function UpdateCheck()
     {
         $ScriptVersion = "23.02.18"
-        $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
+        $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup-sa.ps1"
         $SourceCheck = Invoke-RestMethod -uri "$RawSource"
         $VerCheck = Select-String -Pattern ".VERSION $ScriptVersion" -InputObject $SourceCheck
         If ($null -eq $VerCheck)
