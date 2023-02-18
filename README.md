@@ -104,6 +104,11 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2023-02-18: Version 23.02.18
+
+* Removed specific SMTP config info from config report. [Issue 24](https://github.com/Digressive/HyperV-Backup-Utility/issues/24)
+* Added a "simple auth edition" version of the script. [Issue #25](https://github.com/Digressive/HyperV-Backup-Utility/issues/25)
+
 ### 2023-02-07: Version 23.02.07
 
 * Removed SMTP authentication details from the 'Config' report. Now it just shows as 'configured' if SMTP user is configured. To be clear: no passwords were ever shown or stored in plain text.
