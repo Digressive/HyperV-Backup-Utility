@@ -40,7 +40,7 @@ Hyper-V’s export operation requires that the computer account in Active Direct
 
 When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed. Due to this the script will put the VM in a 'Saved' state so the files can be copied. Previously the VM would be shutdown but this is a faster and safer method as the VM does not require any integrations to be put in a saved state.
 
-## Generating A Password File
+## Generating A Password File For SMTP Authentication
 
 The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell on the computer and logged in with the user that will be running the utility. When you run the command, you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
 

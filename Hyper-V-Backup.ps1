@@ -993,7 +993,7 @@ else {
 
         If ($Webh)
         {
-            Write-Log -Type Conf -Evt "Webhook file: $Webh."
+            Write-Log -Type Conf -Evt "Webhook: Configured"
         }
 
         If ($MailTo)
