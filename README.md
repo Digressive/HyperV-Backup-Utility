@@ -104,6 +104,10 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2023-04-28: Version 23.04.28
+
+* Minor improvement to update checker. If the internet is not reachable it silently errors out.
+
 ### 2023-02-18: Version 23.02.18
 
 * Removed specific SMTP config info from config report. [Issue 24](https://github.com/Digressive/HyperV-Backup-Utility/issues/24)

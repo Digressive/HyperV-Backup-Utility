@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.02.18
+.VERSION 23.04.28
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -92,7 +92,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|               Simple Auth Edition                |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.02.18              
+                              Mike Galvin   https://gal.vin                     Version 23.04.28              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -230,17 +230,26 @@ else {
         }
     }
 
+    ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.02.18"
+        $ScriptVersion = "23.04.28"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup-sa.ps1"
-        $SourceCheck = Invoke-RestMethod -uri "$RawSource"
-        $VerCheck = Select-String -Pattern ".VERSION $ScriptVersion" -InputObject $SourceCheck
-        If ($null -eq $VerCheck)
-        {
-            Write-Log -Type Conf -Evt "*** There is an update available. ***"
+
+        try {
+            $SourceCheck = Invoke-RestMethod -uri "$RawSource"
+            $VerCheck = $SourceCheck -split '\n' | Select-String -Pattern ".VERSION $ScriptVersion" -SimpleMatch -CaseSensitive -Quiet
+
+            If ($VerCheck -ne $True)
+            {
+                Write-Log -Type Conf -Evt "*** There is an update available. ***"
+            }
+        }
+
+        catch {
         }
     }
+
     ##
     ## Start of backup Options functions
     ##
@@ -920,7 +929,7 @@ else {
         ##
 
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.02.18 (Simple Auth Edition)"
+        Write-Log -Type Conf -Evt "Utility Version: 23.04.28 (Simple Auth Edition)"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
