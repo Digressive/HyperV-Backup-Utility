@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.04.28
+.VERSION 23.07.25
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -92,7 +92,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|               Simple Auth Edition                |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.04.28              
+                              Mike Galvin   https://gal.vin                     Version 23.07.25              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -233,7 +233,7 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.04.28"
+        $ScriptVersion = "23.07.25"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup-sa.ps1"
 
         try {
@@ -929,7 +929,7 @@ else {
         ##
 
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.04.28 (Simple Auth Edition)"
+        Write-Log -Type Conf -Evt "Utility Version: 23.07.25 (Simple Auth Edition)"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
@@ -1076,7 +1076,7 @@ else {
                 }
 
                 ## Check for VM running
-                If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
+                If (Get-VM | Where-Object {$VmInfo.State -eq '2'})
                 {
                     $VMwasRunning = $true
                     Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
@@ -1092,15 +1092,27 @@ else {
                 ## Copy the VM config files and log if there is an error.
                 ##
 
+                ## Numeric values for VmState:
+                # Unknown, 0 (Default), The state of the VM could not be determined.
+                # Enabled, 2, The VM is running.
+                # Disabled, 3, The VM is turned off.
+                # Paused, 32768, The VM is paused.
+                # Suspended, 32769, The VM is in a saved state.
+                # Starting, 32770, The VM is starting.
+                # Saving, 32773, The VM is saving its state.
+                # Stopping, 32774, The VM is turning off.
+                # Pausing, 32776, The VM is pausing.
+                # Resuming, 32777, The VM is resuming from a paused state.
+
                 ## Check for VM being in the correct state before continuing
                 $VmState = Get-Vm -Name $Vm
 
-                If ($VmState.State -ne 'Off' -OR $VmState.State -ne 'Saved' -AND $VmState.Status -ne 'Operating normally')
+                If ($VmState.State -ne '3' -OR $VmState.State -ne '32769' -AND $VmState.Status -ne '2')
                 {
                     do {
                         Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
                         Start-Sleep -S 60
-                    } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
+                    } until ($VmState.State -eq '3' -OR $VmState.State -eq '32769' -AND $VmState.Status -eq '2')
                 }
 
                 try {

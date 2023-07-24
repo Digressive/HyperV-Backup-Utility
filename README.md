@@ -104,6 +104,10 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2023-07-25: Version 23.07.25
+
+* Changed strings that check for VM state to numerical values to help with non-english systems. Thanks to 'mannyagre' for the suggestion.
+
 ### 2023-04-28: Version 23.04.28
 
 * Minor improvement to update checker. If the internet is not reachable it silently errors out.
