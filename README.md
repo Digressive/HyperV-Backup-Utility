@@ -106,7 +106,7 @@ This will backup all the VMs running to the backup location specified.
 
 ### 2023-09-01: Version 23.09.01
 
-* Added -ProgCheck option. Wit hthis set, notifications will be sent after each VM is backup is finished.
+* Added -ProgCheck option. With this option set, notifications will be sent after each VM is backup is finished.
 
 ### 2023-04-28: Version 23.04.28
 
