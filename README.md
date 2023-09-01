@@ -104,6 +104,10 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2023-09-01: Version 23.09.01
+
+* Added -ProgCheck option. Wit hthis set, notifications will be sent after each VM is backup is finished.
+
 ### 2023-04-28: Version 23.04.28
 
 * Minor improvement to update checker. If the internet is not reachable it silently errors out.

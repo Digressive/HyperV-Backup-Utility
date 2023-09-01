@@ -1401,6 +1401,9 @@ else {
         Get-ChildItem -Path "$LogPath\Hyper-V-Backup_*" -File | Where-Object CreationTime -lt (Get-Date).AddDays(-$LogHistory) | Remove-Item -Recurse
     }
 
-    Notify
+    If ($ProgCheck -eq $false)
+    {
+        Notify
+    }
 }
 ## End

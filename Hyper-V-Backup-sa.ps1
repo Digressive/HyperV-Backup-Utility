@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.04.28
+.VERSION 23.09.01
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -79,6 +79,7 @@ Param(
     [switch]$ShortDate,
     [switch]$Help,
     [switch]$LowDisk,
+    [switch]$ProgCheck,
     [switch]$NoBanner)
 
 If ($NoBanner -eq $False)
@@ -92,7 +93,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|               Simple Auth Edition                |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.04.28              
+                              Mike Galvin   https://gal.vin                     Version 23.09.01              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -230,10 +231,89 @@ else {
         }
     }
 
+    ## Function for Notifications
+    Function Notify()
+    {
+        ## This whole block is for e-mail, if it is configured.
+        If ($SmtpServer)
+        {
+            If (Test-Path -Path $Log)
+            {
+                ## Default e-mail subject if none is configured.
+                If ($Null -eq $MailSubject)
+                {
+                    $MailSubject = "Hyper-V Backup Utility Log"
+                }
+
+                ## Default Smtp Port if none is configured.
+                If ($Null -eq $SmtpPort)
+                {
+                    $SmtpPort = "25"
+                }
+
+                ## Setting the contents of the log to be the e-mail body.
+                $MailBody = Get-Content -Path $Log | Out-String
+
+                ForEach ($MailAddress in $MailTo)
+                {
+                    ## If an smtp password is configured, get the username and password together for authentication.
+                    ## If an smtp password is not provided then send the e-mail without authentication and obviously no SSL.
+                    If ($SmtpPwd)
+                    {
+                        $SmtpPwdEncrypt = Get-Content $SmtpPwd | ConvertTo-SecureString
+                        $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList ($SmtpUser, $SmtpPwdEncrypt)
+
+                        ## If -ssl switch is used, send the email with SSL.
+                        ## If it isn't then don't use SSL, but still authenticate with the credentials.
+                        If ($UseSsl)
+                        {
+                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
+                        }
+
+                        else {
+                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
+                        }
+                    }
+
+                    else {
+                        Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
+                    }
+                }
+            }
+
+            else {
+                Write-Host -ForegroundColor Red -BackgroundColor Black -Object "There's no log file to email."
+            }
+        }
+        ## End of Email block
+
+        ## Webhook block
+        If ($Webh)
+        {
+            $WebHookUri = Get-Content $Webh
+            $WebHookArr = @()
+
+            $title       = "Hyper-V Backup Utility $Succi/$($Vms.count) VMs Successful"
+            $description = Get-Content -Path $Log | Out-String
+
+            $WebHookObj = [PSCustomObject]@{
+                title = $title
+                description = $description
+            }
+
+            $WebHookArr += $WebHookObj
+            $payload = [PSCustomObject]@{
+                embeds = $WebHookArr
+            }
+
+            Invoke-RestMethod -Uri $WebHookUri -Body ($payload | ConvertTo-Json -Depth 2) -Method Post -ContentType 'application/json'
+        }
+    }
+
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.04.28"
+        $ScriptVersion = "23.09.01"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup-sa.ps1"
 
         try {
@@ -929,7 +1009,7 @@ else {
         ##
 
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.04.28 (Simple Auth Edition)"
+        Write-Log -Type Conf -Evt "Utility Version: 23.09.01 (Simple Auth Edition)"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
@@ -1196,6 +1276,11 @@ else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
                     $Faili = $Faili+1
                 }
+
+                If ($ProgCheck)
+                {
+                    Notify
+                }
             }
         }
         ##
@@ -1276,6 +1361,11 @@ else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
                     $Faili = $Faili+1
                 }
+
+                If ($ProgCheck)
+                {
+                    Notify
+                }
             }
 
             ## If the VSS fix was run, return regkey back to original state.
@@ -1310,78 +1400,9 @@ else {
         Get-ChildItem -Path "$LogPath\Hyper-V-Backup_*" -File | Where-Object CreationTime -lt (Get-Date).AddDays(-$LogHistory) | Remove-Item -Recurse
     }
 
-    ## This whole block is for e-mail, if it is configured.
-    If ($SmtpServer)
+    If ($ProgCheck -eq $false)
     {
-        If (Test-Path -Path $Log)
-        {
-            ## Default e-mail subject if none is configured.
-            If ($Null -eq $MailSubject)
-            {
-                $MailSubject = "Hyper-V Backup Utility Log"
-            }
-
-            ## Default Smtp Port if none is configured.
-            If ($Null -eq $SmtpPort)
-            {
-                $SmtpPort = "25"
-            }
-
-            ## Setting the contents of the log to be the e-mail body.
-            $MailBody = Get-Content -Path $Log | Out-String
-
-            ForEach ($MailAddress in $MailTo)
-            {
-                ## If an smtp password is configured, get the username and password together for authentication.
-                ## If an smtp password is not provided then send the e-mail without authentication and obviously no SSL.
-                If ($SmtpPwd)
-                {
-                    $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList $SmtpUser, $($SmtpPwd | ConvertTo-SecureString -AsPlainText -Force)
-
-                    ## If -ssl switch is used, send the email with SSL.
-                    ## If it isn't then don't use SSL, but still authenticate with the credentials.
-                    If ($UseSsl)
-                    {
-                        Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
-                    }
-
-                    else {
-                        Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
-                    }
-                }
-
-                else {
-                    Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
-                }
-            }
-        }
-
-        else {
-            Write-Host -ForegroundColor Red -BackgroundColor Black -Object "There's no log file to email."
-        }
-    }
-    ## End of Email block
-
-    ## Webhook block
-    If ($Webh)
-    {
-        $WebHookUri = Get-Content $Webh
-        $WebHookArr = @()
-
-        $title       = "Hyper-V Backup Utility $Succi/$($Vms.count) VMs Successful"
-        $description = Get-Content -Path $Log | Out-String
-
-        $WebHookObj = [PSCustomObject]@{
-            title = $title
-            description = $description
-        }
-
-        $WebHookArr += $WebHookObj
-        $payload = [PSCustomObject]@{
-            embeds = $WebHookArr
-        }
-
-        Invoke-RestMethod -Uri $WebHookUri -Body ($payload | ConvertTo-Json -Depth 2) -Method Post -ContentType 'application/json'
+        Notify
     }
 }
 ## End
