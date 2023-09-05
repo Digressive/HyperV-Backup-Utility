@@ -112,7 +112,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
     Use -LowDisk to remove old backups before new ones are created. For low disk space situations.
     Use -ProgCheck to send notifications (email or webhook) after each VM is backed up.
-    Use -OptimiseVHD to optimise the VHDs and make them smaller before copy. Must be used with -NoPerms.
+    Use -OptimiseVHD to optimise the VHDs and make them smaller before copy. Must be used with -NoPerms option.
 
     -NoPerms should only be used when a regular backup cannot be performed.
     Please note: this will cause the VMs to shutdown during the backup process.
@@ -239,22 +239,22 @@ else {
     Function OptimVHD()
     {
         try {
-            Write-Log -Type Info -Evt "Optimising VHD(s)..."
+            Write-Log -Type Info -Evt "(VM:$Vm) Optimising VHD(s)"
             $VmVhds = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path")
 
             ## Loop through each VHD file and optimise
             ForEach ($Vhd in $VmVhds) {
-                Write-Log -Type Info -Evt "Used space before optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                Write-Log -Type Info -Evt "(VM:$Vm) Used space before optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
                 Optimize-VHD -Path "$($Vhd.Path)" -Mode Full
-                Write-Log -Type Info -Evt "Used space after optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                Write-Log -Type Info -Evt "(VM:$Vm) Used space after optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
                 $intTotalDisksSize += (Get-VHD -Path $Vhd.Path).FileSize
             }
 
-            Write-Log -Type Info -Evt "Done optimising VHD(s)"
+            Write-Log -Type Info -Evt "(VM:$Vm) Done optimising VHD(s)"
         }
 
         catch {
-            Write-Log -Type Err -Evt "Error during VHD optimisation: $($_.Exception.Message)"
+            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
         }
     }
 
@@ -981,6 +981,12 @@ else {
             Exit
         }
 
+        If ($NoPerms -eq $false -And $OptimiseVHD -eq $true)
+        {
+            Write-Log -Type Err -Evt "You must specify -NoPerms to use -OptimiseVHD."
+            Exit
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -1182,38 +1188,22 @@ else {
                     $BackupSucc = $false
                 }
 
-                If ($OptimiseVHD -eq $false)
+                ## Check for VM running
+                If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
                 {
-                    ## Check for VM running
-                    If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
-                    {
-                        $VMwasRunning = $true
-                        Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
-                        Stop-VM -Name $Vm -Save
-                    }
+                    $VMwasRunning = $true
+                    Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
+                    Stop-VM -Name $Vm -Save
+                }
 
-                    else {
-                        $VMwasRunning = $false
-                        Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
-                    }
+                else {
+                    $VMwasRunning = $false
+                    Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
                 }
 
                 ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
                 If ($OptimiseVHD)
                 {
-                    ## Check for VM running
-                    If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
-                    {
-                        $VMwasRunning = $true
-                        Write-Log -Type Info -Evt "(VM:$Vm) VM is running, -OptimiseVHD option enabled, shutting down"
-                        Stop-VM -Name $Vm
-                    }
-
-                    else {
-                        $VMwasRunning = $false
-                        Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
-                    }
-
                     OptimVHD
                 }
 
