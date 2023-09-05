@@ -1153,12 +1153,6 @@ else {
         {
             ForEach ($Vm in $Vms)
             {
-                ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
-                If ($OptimiseVHD)
-                {
-                    OptimVHD
-                }
-
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
@@ -1188,17 +1182,39 @@ else {
                     $BackupSucc = $false
                 }
 
-                ## Check for VM running
-                If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
+                If ($OptimiseVHD -eq $false)
                 {
-                    $VMwasRunning = $true
-                    Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
-                    Stop-VM -Name $Vm -Save
+                    ## Check for VM running
+                    If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
+                    {
+                        $VMwasRunning = $true
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
+                        Stop-VM -Name $Vm -Save
+                    }
+
+                    else {
+                        $VMwasRunning = $false
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
+                    }
                 }
 
-                else {
-                    $VMwasRunning = $false
-                    Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
+                ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
+                If ($OptimiseVHD)
+                {
+                    ## Check for VM running
+                    If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
+                    {
+                        $VMwasRunning = $true
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM is running, -OptimiseVHD option enabled, shutting down"
+                        Stop-VM -Name $Vm
+                    }
+
+                    else {
+                        $VMwasRunning = $false
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
+                    }
+
+                    OptimVHD
                 }
 
                 ##
