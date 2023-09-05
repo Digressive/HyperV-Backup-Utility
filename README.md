@@ -84,6 +84,8 @@ Here’s a list of all the command line switches and example configurations.
 | -LogRotate | Remove logs produced by the utility older than X days | [number] |
 | -NoBanner | Use this option to hide the ASCII art title in the console. | N/A |
 | -Help | Display usage information. No arguments also displays help. | N/A |
+| -ProgCheck | Send notifications (email or webhook) after each VM is backed up. | N/A |
+| -OptimiseVHD | Optimise the VHDs and make them smaller before copy. Must be used with -NoPerms option. | N/A |
 | -Webhook | The txt file containing the URI for a webhook to send the log file to. | [path\]webhook.txt |
 | -Subject | Specify a subject line. If you leave this blank the default subject will be used | "'[Server: Notification]'" |
 | -SendTo | The e-mail address the log should be sent to. For multiple address, separate with a comma. | [example@contoso.com] |
