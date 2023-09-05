@@ -81,6 +81,7 @@ Param(
     [switch]$Help,
     [switch]$LowDisk,
     [switch]$ProgCheck,
+    [switch]$OptimiseVHD,
     [switch]$NoBanner)
 
 If ($NoBanner -eq $False)
@@ -110,6 +111,8 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
     Use -LowDisk to remove old backups before new ones are created. For low disk space situations.
+    Use -ProgCheck to send notifications (email or webhook) after each VM is backed up.
+    Use -OptimiseVHD to optimise the VHDs and make them smaller before copy. Must be used with -NoPerms.
 
     -NoPerms should only be used when a regular backup cannot be performed.
     Please note: this will cause the VMs to shutdown during the backup process.
@@ -229,6 +232,29 @@ else {
             }
 
             Write-Host -ForegroundColor Cyan -Object "$Evt"
+        }
+    }
+
+    ## Function to optimise the VHD
+    Function OptimVHD()
+    {
+        try {
+            Write-Log -Type Info -Evt "Optimising VHD(s)..."
+            $VmVhds = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path")
+
+            ## Loop through each VHD file and optimise
+            ForEach ($Vhd in $VmVhds) {
+                Write-Log -Type Info -Evt "Used space before optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                Optimize-VHD -Path "$($Vhd.Path)" -Mode Full
+                Write-Log -Type Info -Evt "Used space after optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                $intTotalDisksSize += (Get-VHD -Path $Vhd.Path).FileSize
+            }
+
+            Write-Log -Type Info -Evt "Done optimising VHD(s)"
+        }
+
+        catch {
+            Write-Log -Type Err -Evt "Error during VHD optimisation: $($_.Exception.Message)"
         }
     }
 
@@ -1127,6 +1153,12 @@ else {
         {
             ForEach ($Vm in $Vms)
             {
+                ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
+                If ($OptimiseVHD)
+                {
+                    OptimVHD
+                }
+
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
