@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.09.01
+.VERSION 23.09.05
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -68,6 +68,7 @@ Param(
     [alias("User")]
     $SmtpUser,
     [alias("Pwd")]
+    [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $SmtpPwd,
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
@@ -80,6 +81,7 @@ Param(
     [switch]$Help,
     [switch]$LowDisk,
     [switch]$ProgCheck,
+    [switch]$OptimiseVHD,
     [switch]$NoBanner)
 
 If ($NoBanner -eq $False)
@@ -92,8 +94,8 @@ If ($NoBanner -eq $False)
     | |  | | |_| | |_) |  __/ |   \  /    | |_) | (_| | (__|   <| |_| | |_) | | |__| | |_| | | | |_| |_| |    
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
-            |___/|_|               Simple Auth Edition                |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.09.01              
+            |___/|_|                                                  |_|                           |___/     
+                              Mike Galvin   https://gal.vin                     Version 23.09.05              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -109,6 +111,8 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
     Use -LowDisk to remove old backups before new ones are created. For low disk space situations.
+    Use -ProgCheck to send notifications (email or webhook) after each VM is backed up.
+    Use -OptimiseVHD to optimise the VHDs and make them smaller before copy. Must be used with -NoPerms option.
 
     -NoPerms should only be used when a regular backup cannot be performed.
     Please note: this will cause the VMs to shutdown during the backup process.
@@ -138,7 +142,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     If none is specified then the default of 25 will be used.
 
     Specify the user to access SMTP with -User [example@contoso.com]
-    Specify the password to use with -Pwd [password123]
+    Specify the password file to use with -Pwd [path\]ps-script-pwd.txt.
     Use SSL for SMTP server connection with -UseSsl.
 
     To generate an encrypted password file run the following commands
@@ -231,10 +235,33 @@ else {
         }
     }
 
+    ## Function to optimise the VHD
+    Function OptimVHD()
+    {
+        try {
+            Write-Log -Type Info -Evt "(VM:$Vm) Optimising VHD(s)"
+            $VmVhds = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path")
+
+            ## Loop through each VHD file and optimise
+            ForEach ($Vhd in $VmVhds) {
+                Write-Log -Type Info -Evt "(VM:$Vm) Used space before optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                Optimize-VHD -Path "$($Vhd.Path)" -Mode Full
+                Write-Log -Type Info -Evt "(VM:$Vm) Used space after optimising VHD [$($Vhd.Path)] = $([math]::ceiling((Get-VHD -Path $Vhd.Path).FileSize / 1GB )) GB"
+                $intTotalDisksSize += (Get-VHD -Path $Vhd.Path).FileSize
+            }
+
+            Write-Log -Type Info -Evt "(VM:$Vm) Done optimising VHD(s)"
+        }
+
+        catch {
+            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+        }
+    }
+
     ## Function for Notifications
     Function Notify()
     {
-        ## This whole block is for e-mail, if it is configured.
+        ## This whole block is for "simple auth" e-mail, if it is configured.
         If ($SmtpServer)
         {
             If (Test-Path -Path $Log)
@@ -260,8 +287,7 @@ else {
                     ## If an smtp password is not provided then send the e-mail without authentication and obviously no SSL.
                     If ($SmtpPwd)
                     {
-                        $SmtpPwdEncrypt = Get-Content $SmtpPwd | ConvertTo-SecureString
-                        $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList ($SmtpUser, $SmtpPwdEncrypt)
+                        $SmtpCreds = New-Object System.Management.Automation.PSCredential -ArgumentList $SmtpUser, $($SmtpPwd | ConvertTo-SecureString -AsPlainText -Force)
 
                         ## If -ssl switch is used, send the email with SSL.
                         ## If it isn't then don't use SSL, but still authenticate with the credentials.
@@ -313,8 +339,8 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.09.01"
-        $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup-sa.ps1"
+        $ScriptVersion = "23.09.05"
+        $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
 
         try {
             $SourceCheck = Invoke-RestMethod -uri "$RawSource"
@@ -954,6 +980,12 @@ else {
             Exit
         }
 
+        If ($NoPerms -eq $false -And $OptimiseVHD -eq $true)
+        {
+            Write-Log -Type Err -Evt "You must specify -NoPerms to use -OptimiseVHD."
+            Exit
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -1009,7 +1041,7 @@ else {
         ##
 
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.09.01 (Simple Auth Edition)"
+        Write-Log -Type Conf -Evt "Utility Version: 23.09.05"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
@@ -1081,7 +1113,7 @@ else {
 
         If ($Webh)
         {
-            Write-Log -Type Conf -Evt "Webhook file: $Webh."
+            Write-Log -Type Conf -Evt "Webhook: Configured"
         }
 
         If ($MailTo)
@@ -1126,6 +1158,15 @@ else {
         {
             ForEach ($Vm in $Vms)
             {
+                ## Get VM info
+                try {
+                    $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
+                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [CurrentFileSizeGB = $($VhdSize.FileSizeGB)GB - MaxSizeGB = $($VhdSize.MaxSizeGB)GB]}"
+                }
+                catch {
+                    Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
+                }
+
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
                 $BackupSucc = $false
@@ -1168,6 +1209,12 @@ else {
                     Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
                 }
 
+                ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
+                If ($OptimiseVHD)
+                {
+                    OptimVHD
+                }
+
                 ##
                 ## Copy the VM config files and log if there is an error.
                 ##
@@ -1182,6 +1229,8 @@ else {
                         Start-Sleep -S 60
                     } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
                 }
+
+                $StartTime = $(get-date)
 
                 try {
                     $BackupSucc = $false
@@ -1277,6 +1326,10 @@ else {
                     $Faili = $Faili+1
                 }
 
+                $elapsedTime = $(get-date) - $StartTime
+                $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+                Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
+
                 If ($ProgCheck)
                 {
                     Notify
@@ -1296,6 +1349,15 @@ else {
         else {
             ForEach ($Vm in $Vms)
             {
+                ## Get VM info
+                try {
+                    $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
+                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [CurrentFileSizeGB = $($VhdSize.FileSizeGB)GB - MaxSizeGB = $($VhdSize.MaxSizeGB)GB]}"
+                }
+                catch {
+                    Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
+                }
+
                 If (Test-Path -Path "$WorkDir\$Vm")
                 {
                     Remove-Item "$WorkDir\$Vm" -Recurse -Force
@@ -1334,6 +1396,8 @@ else {
                     RemoveOld
                 }
 
+                $StartTime = $(get-date)
+
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
                     $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
@@ -1361,6 +1425,10 @@ else {
                     Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
                     $Faili = $Faili+1
                 }
+
+                $elapsedTime = $(get-date) - $StartTime
+                $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+                Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
 
                 If ($ProgCheck)
                 {

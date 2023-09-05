@@ -104,9 +104,12 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
-### 2023-09-01: Version 23.09.01
+### 2023-09-05: Version 23.09.05
 
+* Added new features from [Issue 28](https://github.com/Digressive/HyperV-Backup-Utility/issues/28)
 * Added -ProgCheck option. With this option set, notifications will be sent after each VM is backup is finished.
+* Added backup time duration to the script output.
+* Added -OptimiseVHD option to shrink the size of the VHDs. Can only be used the the -NoPerms option as the VM must be offline to optimise the VHDs.
 
 ### 2023-04-28: Version 23.04.28
 
