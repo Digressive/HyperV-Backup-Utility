@@ -96,7 +96,7 @@ Here’s a list of all the command line switches and example configurations.
 | -Pwd | The txt file containing the encrypted password for SMTP authentication. | [path\]ps-script-pwd.txt |
 | -UseSsl | Configures the utility to connect to the SMTP server using SSL. | N/A |
 
-## Example
+## How to use
 
 ``` txt
 [path\]Hyper-V-Backup.ps1 -BackupTo [path\]
