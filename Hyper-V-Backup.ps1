@@ -72,6 +72,9 @@ Param(
     $SmtpPwd,
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
+    $AllSucceedMsg = " fullSucc",
+    $FailureMsg = " NEEDS TECH",
+    $OutcomeState = "",
     [string]$Webh,
     [switch]$UseSsl,
     [switch]$NoPerms,
@@ -281,6 +284,15 @@ else {
                 ## Setting the contents of the log to be the e-mail body.
                 $MailBody = Get-Content -Path $Log | Out-String
 
+                ## Adding our custom logic for updating the subject line to something spicy if we have a full success
+                if ($Succi -eq $($Vms.Count))
+                    {
+                        $OutcomeState += $AllSucceedMsg
+                    }
+                    else {
+                        $OutcomeState += $FailureMsg
+                    }
+                
                 ForEach ($MailAddress in $MailTo)
                 {
                     ## If an smtp password is configured, get the username and password together for authentication.
@@ -294,16 +306,16 @@ else {
                         ## If it isn't then don't use SSL, but still authenticate with the credentials.
                         If ($UseSsl)
                         {
-                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
+                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $OutcomeState $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $SmtpCreds
                         }
 
                         else {
-                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
+                            Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $OutcomeState $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort -Credential $SmtpCreds
                         }
                     }
 
                     else {
-                        Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
+                        Send-MailMessage -To $MailAddress -From $MailFrom -Subject "$MailSubject $OutcomeState $Succi/$($Vms.count) VMs Successful" -Body $MailBody -SmtpServer $SmtpServer -Port $SmtpPort
                     }
                 }
             }
