@@ -381,7 +381,7 @@ else {
 
         If ($7zipOutput -match "ERROR:")
         {
-            Write-Log -Type Err -Evt "(VM:$Vm) $7zipOutput"
+            Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error creating the archive"
             $BackupSucc = $false
         }
 
@@ -393,7 +393,7 @@ else {
 
         If ($7zipTestOutput -match "ERROR:")
         {
-            Write-Log -Type Err -Evt "(VM:$Vm) $7zipTestOutput"
+            Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error testing the archive"
             $BackupSucc = $false
         }
 
