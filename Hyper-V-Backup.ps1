@@ -363,6 +363,8 @@ else {
 
     Function CompressFiles7zip($CompressDateFormat,$CompressDir,$CompressFileName)
     {
+        $7zipOutput = $null
+        $7zipTestOutput = $null
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## 7-zip compression with shortdate
         # try {
@@ -387,7 +389,7 @@ else {
             $BackupSucc = $true
         }
 
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" t "$CompressDir\$CompressFileNameSet" *>&1
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t ("$CompressDir\$CompressFileNameSet") *>&1
 
         If ($7zipTestOutput -match "ERROR:")
         {
