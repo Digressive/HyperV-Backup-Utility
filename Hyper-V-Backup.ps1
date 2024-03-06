@@ -365,13 +365,38 @@ else {
     {
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## 7-zip compression with shortdate
-        try {
-            & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
+        # try {
+        #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
+        #     $BackupSucc = $true
+        # }
+        # catch {
+        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+        #     $BackupSucc = $false
+        # }
+
+        ## Makeshift error catch for 7zip in PowerShell
+        $7zipOutput = & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*" *>&1
+
+        If ($7zipOutput -match "ERROR:")
+        {
+            Write-Log -Type Err -Evt "(VM:$Vm) $7zipOutput"
+            $BackupSucc = $false
+        }
+
+        else {
             $BackupSucc = $true
         }
-        catch {
-            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" t "$CompressDir\$CompressFileNameSet" *>&1
+
+        If ($7zipTestOutput -match "ERROR:")
+        {
+            Write-Log -Type Err -Evt "(VM:$Vm) $7zipTestOutput"
             $BackupSucc = $false
+        }
+
+        else {
+            $BackupSucc = $true
         }
 
         $BackupSucc | Out-Null
