@@ -365,17 +365,7 @@ else {
     {
         $7zipOutput = $null
         $7zipTestOutput = $null
-        $BackupSucc = $null
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
-        ## 7-zip compression with shortdate
-        # try {
-        #     & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*"
-        #     $BackupSucc = $true
-        # }
-        # catch {
-        #     $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-        #     $BackupSucc = $false
-        # }
 
         ## Makeshift error catch for 7zip in PowerShell
         $7zipOutput = & "$env:programfiles\7-Zip\7z.exe" $SzSwSplit -bso0 a ("$CompressDir\$CompressFileNameSet") "$CompressDir\$Vm\*" *>&1
@@ -383,30 +373,26 @@ else {
         If ($7zipOutput -match "ERROR:")
         {
             Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error creating the archive"
-            $BackupSucc = $false
+            Set-Variable -Name 'BackupSucc' -Value $false -Scope 2
         }
 
         else {
-            $BackupSucc = $true
+            Set-Variable -Name 'BackupSucc' -Value $true -Scope 2
         }
 
         $GetTheFile = Get-ChildItem -Path $CompressDir -File -Filter "$CompressFileNameSet.*"
-        #Write-Log -Type Info -Evt "$($GetTheFile.FullName)"
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1
-        #$7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t ("$CompressDir\$CompressFileNameSet") *>&1
+        #$7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1 ## Keep
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t "C:\Users\mike\Downloads\1.zip" *>&1 # Debug
 
         If ($7zipTestOutput -match "ERROR:")
         {
-            Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error testing the archive"
-            #Write-Log -Type Err -Evt "(VM:$Vm) $7zipTestOutput"
-            $BackupSucc = $false
+            Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error verifying the archive"
+            Set-Variable -Name 'BackupSucc' -Value $false -Scope 2
         }
 
         else {
-            $BackupSucc = $true
+            Set-Variable -Name 'BackupSucc' -Value $true -Scope 2
         }
-
-        $BackupSucc | Out-Null
     }
 
     Function CompressFilesWin($CompressDateFormat,$CompressDir,$CompressFileName)
@@ -417,14 +403,12 @@ else {
         ## Windows compression with shortdate
         try {
             [io.compression.zipfile]::CreateFromDirectory("$CompressDir\$Vm", ("$CompressDir\$CompressFileNameSet.zip"))
-            $BackupSucc = $true
+            Set-Variable -Name 'BackupSucc' -Value $true -Scope 2
         }
         catch {
             $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-            $BackupSucc = $false
+            Set-Variable -Name 'BackupSucc' -Value $false -Scope 2
         }
-
-        $BackupSucc | Out-Null
     }
 
     Function ShortDateFileNo($ShortDateDir,$ShortDateFilePat)
@@ -449,42 +433,21 @@ else {
                 If ($SzSwSplit -like "-v*")
                 {
                     ## 7-zip compression with shortdate configured and a number appended.
-                    try {
-                        $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
-                        $BackupSucc = $true
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        $BackupSucc = $false
-                    }
+                    $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
+                    CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                 }
                 
                 else {
                     ## 7-zip compression with shortdate configured and a number appended.
-                    try {
-                        $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
-                        CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
-                        $BackupSucc = $true
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        $BackupSucc = $false
-                    }
+                    $ShortDateNN7zFix = $ShortDateNN -replace '[.*]'
+                    CompressFiles7zip -CompressDir $ShortDateDir -CompressFileName $ShortDateNN7zFix
                 }
             }
 
             else {
                 ## Windows compression with shortdate configured and a number appended.
-                try {
-                    $ShortDateNNWinFix = $ShortDateNN.TrimEnd(".zip")
-                    CompressFilesWin -CompressDir $ShortDateDir -CompressFileName $ShortDateNNWinFix
-                    $BackupSucc = $true
-                }
-                catch {
-                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    $BackupSucc = $false
-                }
+                $ShortDateNNWinFix = $ShortDateNN.TrimEnd(".zip")
+                CompressFilesWin -CompressDir $ShortDateDir -CompressFileName $ShortDateNNWinFix
             }
         }
 
@@ -507,7 +470,6 @@ else {
                 }
             }
         }
-        $BackupSucc | Out-Null
     }
 
     Function ReportRemove($RemoveDir,$RemoveFilePat,$RemoveDirOpt,$RemoveHistory)
@@ -553,7 +515,6 @@ else {
             If ($WorkDir -ne $Backup)
             {
                 ## Make sure the backup directory exists.
-
                 If (Test-Path -Path $Backup)
                 {
                     If ($ShortDate)
@@ -749,6 +710,7 @@ else {
 
             else {
                 Write-Log -Type Err -Evt "(VM:$Vm) Compressing backup failed."
+                Set-Variable -Name 'BackupSucc' -Value $false -Scope 1
             }
 
             ## If working directory has been configured by the user, move the compressed backup to the backup folder and rename to include the date.
@@ -1072,7 +1034,6 @@ else {
         ##
         ## Display the current config and log if configured.
         ##
-
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
         Write-Log -Type Conf -Evt "Utility Version: 23.09.05"
         UpdateCheck ## Run Update checker function
@@ -1202,7 +1163,6 @@ else {
 
                 $VmFixed = $Vm.replace(".","-")
                 $VmInfo = Get-VM -Name $Vm
-                $BackupSucc = $false
 
                 ## Remove old backups if -LowDisk is configured
                 If ($LowDisk)
@@ -1266,7 +1226,6 @@ else {
                 $StartTime = $(get-date)
 
                 try {
-                    $BackupSucc = $false
                     Write-Log -Type Info -Evt "(VM:$Vm) Copying config files"
                     Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
                     Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
@@ -1284,7 +1243,6 @@ else {
                 ## Copy the VHDs and log if there is an error.
                 ##
                 try {
-                    $BackupSucc = $false
                     Write-Log -Type Info -Evt "(VM:$Vm) Copying VHD files"
                     Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force
                     $BackupSucc = $true
@@ -1306,7 +1264,6 @@ else {
                     ## Copy the snapshot config files and log if there is an error.
                     ##
                     try {
-                        $BackupSucc = $false
                         Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot config files"
                         Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
                         Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
@@ -1322,7 +1279,6 @@ else {
 
                     ## Copy the snapshot root VHD.
                     try {
-                        $BackupSucc = $false
                         Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot root VHD files"
                         Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force -ErrorAction 'Stop'
                         $BackupSucc = $true
@@ -1341,21 +1297,24 @@ else {
                     Start-Sleep -S 60
                 }
 
+                ## Remove old backups if -LowDisk is NOT configured
+                If ($LowDisk -eq $false)
+                {
+                    RemoveOld
+                }
+
                 If ($BackupSucc)
                 {
-                    ## Remove old backups if -LowDisk is NOT configured
-                    If ($LowDisk -eq $false)
-                    {
-                        RemoveOld
-                    }
-
                     OptionsRun
+                }
+
+                If ($BackupSucc)
+                {
                     Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
                     $Succi = $Succi+1
                 }
-
                 else {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Backup failed, VM skipped"
+                    Write-Log -Type Err -Evt "(VM:$Vm) Backup failed"
                     $Faili = $Faili+1
                 }
 
@@ -1376,7 +1335,6 @@ else {
         ##
         ## Standard export process starts here.
         ##
-
         ## If the -NoPerms switch is NOT set, for each VM check for the existence of a previous export.
         ## If it exists then delete it, otherwise the export will fail.
         else {
@@ -1421,7 +1379,6 @@ else {
             ForEach ($Vm in $Vms)
             {
                 $VmFixed = $Vm.replace(".","-")
-                $BackupSucc = $false
 
                 ## Remove old backups if -LowDisk is configured
                 If ($LowDisk)
@@ -1441,21 +1398,24 @@ else {
                     $BackupSucc = $false
                 }
 
+                ## Remove old backups if -LowDisk is NOT configured
+                If ($LowDisk -eq $false)
+                {
+                    RemoveOld
+                }
+
                 If ($BackupSucc)
                 {
-                    ## Remove old backups if -LowDisk is NOT configured
-                    If ($LowDisk -eq $false)
-                    {
-                        RemoveOld
-                    }
-
                     OptionsRun
+                }
+
+                If ($BackupSucc)
+                {
                     Write-Log -Type Succ -Evt "(VM:$Vm) Export Successful"
                     $Succi = $Succi+1
                 }
-
                 else {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Export failed, VM skipped"
+                    Write-Log -Type Err -Evt "(VM:$Vm) Export failed"
                     $Faili = $Faili+1
                 }
 
