@@ -4,7 +4,7 @@
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
-.AUTHOR Mike Galvin Contact: mike@gal.vin 
+.AUTHOR Mike Galvin Contact: mike@gal.vin
 
 .COMPANYNAME Mike Galvin
 
@@ -102,7 +102,7 @@ If ($NoBanner -eq $False)
 
 If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
 {
-    Write-Host -Object "Usage:
+    Write-Host -Object " Usage:
     From a terminal run: [path\]Hyper-V-Backup.ps1 -BackupTo [path\]
     This will backup all the VMs running to the backup location specified.
 
@@ -201,7 +201,7 @@ else {
                 Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [INFO] $Evt"
             }
 
-            Write-Host -Object "$(Get-DateFormat) [INFO] $Evt"
+            Write-Host -Object " $(Get-DateFormat) [INFO] $Evt"
         }
 
         If ($Type -eq "Succ")
@@ -211,7 +211,7 @@ else {
                 Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [SUCCESS] $Evt"
             }
 
-            Write-Host -ForegroundColor Green -Object "$(Get-DateFormat) [SUCCESS] $Evt"
+            Write-Host -ForegroundColor Green -Object " $(Get-DateFormat) [SUCCESS] $Evt"
         }
 
         If ($Type -eq "Err")
@@ -221,7 +221,7 @@ else {
                 Add-Content -Path $Log -Encoding ASCII -Value "$(Get-DateFormat) [ERROR] $Evt"
             }
 
-            Write-Host -ForegroundColor Red -BackgroundColor Black -Object "$(Get-DateFormat) [ERROR] $Evt"
+            Write-Host -ForegroundColor Red -BackgroundColor Black -Object " $(Get-DateFormat) [ERROR] $Evt"
         }
 
         If ($Type -eq "Conf")
@@ -231,7 +231,7 @@ else {
                 Add-Content -Path $Log -Encoding ASCII -Value "$Evt"
             }
 
-            Write-Host -ForegroundColor Cyan -Object "$Evt"
+            Write-Host -ForegroundColor Cyan -Object " $Evt"
         }
     }
 
@@ -309,7 +309,7 @@ else {
             }
 
             else {
-                Write-Host -ForegroundColor Red -BackgroundColor Black -Object "There's no log file to email."
+                Write-Host -ForegroundColor Red -BackgroundColor Black -Object " There's no log file to email."
             }
         }
         ## End of Email block
@@ -349,7 +349,7 @@ else {
 
             If ($VerCheck -ne $True)
             {
-                Write-Log -Type Conf -Evt "*** There is an update available. ***"
+                Write-Log -Type Conf -Evt "   There is an update available!"
             }
         }
 
@@ -365,6 +365,7 @@ else {
     {
         $7zipOutput = $null
         $7zipTestOutput = $null
+        $BackupSucc = $null
         $CompressFileNameSet = $CompressFileName+$CompressDateFormat
         ## 7-zip compression with shortdate
         # try {
@@ -389,11 +390,15 @@ else {
             $BackupSucc = $true
         }
 
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t ("$CompressDir\$CompressFileNameSet") *>&1
+        $GetTheFile = Get-ChildItem -Path $CompressDir -File -Filter "$CompressFileNameSet.*"
+        #Write-Log -Type Info -Evt "$($GetTheFile.FullName)"
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1
+        #$7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t ("$CompressDir\$CompressFileNameSet") *>&1
 
         If ($7zipTestOutput -match "ERROR:")
         {
             Write-Log -Type Err -Evt "(VM:$Vm) 7zip encountered an error testing the archive"
+            #Write-Log -Type Err -Evt "(VM:$Vm) $7zipTestOutput"
             $BackupSucc = $false
         }
 
@@ -1080,7 +1085,7 @@ else {
             Write-Log -Type Conf -Evt "VMs to backup:"
             ForEach ($Vm in $Vms)
             {
-                Write-Log -Type Conf -Evt "*** $Vm ***"
+                Write-Log -Type Conf -Evt "   $Vm"
             }
         }
 
@@ -1189,7 +1194,7 @@ else {
                 ## Get VM info
                 try {
                     $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
-                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [CurrentFileSizeGB = $($VhdSize.FileSizeGB)GB - MaxSizeGB = $($VhdSize.MaxSizeGB)GB]}"
+                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [Current Size = $($VhdSize.FileSizeGB)GB - Max Size = $($VhdSize.MaxSizeGB)GB]"
                 }
                 catch {
                     Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
@@ -1380,7 +1385,7 @@ else {
                 ## Get VM info
                 try {
                     $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
-                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [CurrentFileSizeGB = $($VhdSize.FileSizeGB)GB - MaxSizeGB = $($VhdSize.MaxSizeGB)GB]}"
+                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [Current Size = $($VhdSize.FileSizeGB)GB - Max Size = $($VhdSize.MaxSizeGB)GB]"
                 }
                 catch {
                     Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
@@ -1445,7 +1450,7 @@ else {
                     }
 
                     OptionsRun
-                    Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
+                    Write-Log -Type Succ -Evt "(VM:$Vm) Export Successful"
                     $Succi = $Succi+1
                 }
 
