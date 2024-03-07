@@ -381,8 +381,7 @@ else {
         }
 
         $GetTheFile = Get-ChildItem -Path $CompressDir -File -Filter "$CompressFileNameSet.*"
-        #$7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1 ## Keep
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t "C:\Users\mike\Downloads\1.zip" *>&1 # Debug
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1
 
         If ($7zipTestOutput -match "ERROR:")
         {
