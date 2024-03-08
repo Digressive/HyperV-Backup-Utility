@@ -487,11 +487,17 @@ else {
         ## report old files to remove
         If ($LogPathUsr)
         {
-            Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            If (Test-Path -Path $RemoveDir)
+            {
+                Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Select-Object -Property Name, CreationTime | Format-Table -HideTableHeaders | Out-File -Append $Log -Encoding ASCII
+            }
         }
 
         ## remove old files
-        Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Remove-Item -Recurse -Force
+        If (Test-Path -Path $RemoveDir)
+        {
+            Get-ChildItem -Path $RemoveDir -Filter $RemoveFullPath @RemoveDirOptSet | Where-Object CreationTime -lt (Get-Date).AddDays(-$RemoveHistory) | Remove-Item -Recurse -Force
+        }
     }
 
     Function RemoveOld()
