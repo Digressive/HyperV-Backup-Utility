@@ -735,9 +735,11 @@ else {
                     If ($SzSwSplit -like "-v*")
                     {
                         $SzSplitFiles = Get-ChildItem -Path ("$WorkDir\$VmFixed-$(Get-DateShort).*.*") -File
-                        
+
                         ForEach ($SplitFile in $SzSplitFiles) {
                             $ShortDateT = Test-Path -Path "$Backup\$($SplitFile.name)"
+                            $split7zArray = $SplitFile.basename.Split(".")
+                            $archType = $split7zArray[1]
 
                             If ($ShortDateT)
                             {
@@ -745,13 +747,13 @@ else {
                                 $FileExist = Get-ChildItem -Path "$Backup\$($SplitFile.name)" -File
                                 $i = 1
 
-                                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + $FileExist.Extension)
+                                $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + "." + $archType + $FileExist.Extension)
                                 $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
 
                                 If ($ShortDateExistT)
                                 {
                                     do {
-                                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + $FileExist.Extension)
+                                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + "." + $archType + $FileExist.Extension) ## debug test
                                         $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
                                     } until ($ShortDateExistT -eq $false)
                                 }
