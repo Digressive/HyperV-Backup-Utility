@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 23.09.05
+.VERSION 24.03.08
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -95,7 +95,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 23.09.05              
+                              Mike Galvin   https://gal.vin                     Version 24.03.08              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -340,7 +340,7 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "23.09.05"
+        $ScriptVersion = "24.03.08"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
 
         try {
@@ -1040,7 +1040,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 23.09.05"
+        Write-Log -Type Conf -Evt "Utility Version: 24.03.08"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."

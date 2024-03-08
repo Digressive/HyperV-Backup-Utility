@@ -105,6 +105,13 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2024-03-08: Version 24.03.08
+
+* Added a verify operation for 7zip created archives as per [Issue 33](https://github.com/Digressive/HyperV-Backup-Utility/issues/33)
+* Overhauled the backup success/fail checks to work correctly. PowerShell variable scopes matter.
+* Added check for the work dir/backup dir to exist before trying to remove as this caused a script error because the directory didn't exist when trying to remove.
+* Cleaned up some console and log file output.
+
 ### 2023-09-05: Version 23.09.05
 
 * Added new features from [Issue 28](https://github.com/Digressive/HyperV-Backup-Utility/issues/28)
