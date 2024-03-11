@@ -349,7 +349,7 @@ else {
 
             If ($VerCheck -ne $True)
             {
-                Write-Log -Type Conf -Evt "   There is an update available!"
+                Write-Log -Type Conf -Evt "-- There is an update available! --"
             }
         }
 
@@ -753,7 +753,7 @@ else {
                                 If ($ShortDateExistT)
                                 {
                                     do {
-                                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + "." + $archType + $FileExist.Extension) ## debug test
+                                        $ShortDateNN = ("$VmFixed-$(Get-DateShort)-{0:D3}" -f $i++ + "." + $archType + $FileExist.Extension)
                                         $ShortDateExistT = Test-Path -Path $Backup\$ShortDateNN
                                     } until ($ShortDateExistT -eq $false)
                                 }
@@ -1053,7 +1053,7 @@ else {
             Write-Log -Type Conf -Evt "VMs to backup:"
             ForEach ($Vm in $Vms)
             {
-                Write-Log -Type Conf -Evt "   $Vm"
+                Write-Log -Type Conf -Evt "$Vm"
             }
         }
 
