@@ -381,7 +381,19 @@ else {
         }
 
         $GetTheFile = Get-ChildItem -Path $CompressDir -File -Filter "$CompressFileNameSet.*"
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1
+
+        $archivePassword = if ($null -ne $SzSwitches)
+        {
+            $password = ($SzSwitches -split ',') | Where-Object { $_ -match '^-p(.*)' } | ForEach-Object { $matches[1] }
+            if ($password -ne "" -and $null -ne  $password)
+            {
+                "-p$password"
+            }
+            else {""}
+        }
+        else {""}
+
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" $archivePassword -bso0 t $($GetTheFile.FullName) *>&1
 
         If ($7zipTestOutput -match "ERROR:")
         {
@@ -1397,7 +1409,7 @@ else {
 
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
-                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop' -CaptureLiveState CaptureDataConsistentState
                     $BackupSucc = $true
                 }
                 catch {
