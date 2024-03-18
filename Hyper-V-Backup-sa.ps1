@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 24.03.08
+.VERSION 24.03.18
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -95,7 +95,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 24.03.08              
+                              Mike Galvin   https://gal.vin                     Version 24.03.18              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -339,7 +339,7 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "24.03.08"
+        $ScriptVersion = "24.03.18"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
 
         try {
@@ -380,7 +380,19 @@ else {
         }
 
         $GetTheFile = Get-ChildItem -Path $CompressDir -File -Filter "$CompressFileNameSet.*"
-        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" -bso0 t $($GetTheFile.FullName) *>&1
+
+        $archivePassword = if ($null -ne $SzSwitches)
+        {
+            $password = ($SzSwitches -split ',') | Where-Object { $_ -match '^-p(.*)' } | ForEach-Object { $matches[1] }
+            if ($password -ne "" -and $null -ne  $password)
+            {
+                "-p$password"
+            }
+            else {""}
+        }
+        else {""}
+
+        $7zipTestOutput = & "$env:programfiles\7-Zip\7z.exe" $archivePassword -bso0 t $($GetTheFile.FullName) *>&1
 
         If ($7zipTestOutput -match "ERROR:")
         {
@@ -1041,7 +1053,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 24.03.08"
+        Write-Log -Type Conf -Evt "Utility Version: 24.03.18"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."

@@ -105,6 +105,10 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2024-03-18: Version 24.03.18
+
+* Added fix for verifying password protected 7-Zip archives from [Issue 33](https://github.com/Digressive/HyperV-Backup-Utility/issues/33)
+
 ### 2024-03-08: Version 24.03.08
 
 * Fixed 7-Zip split files getting renamed and not keeping file extensions when short dates are used.
