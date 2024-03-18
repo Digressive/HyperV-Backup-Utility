@@ -1409,7 +1409,7 @@ else {
 
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
-                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop' -CaptureLiveState CaptureDataConsistentState
+                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
                     $BackupSucc = $true
                 }
                 catch {
