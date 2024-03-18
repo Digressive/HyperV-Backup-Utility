@@ -132,7 +132,7 @@ This will backup all the VMs running to the backup location specified.
 ### 2023-02-18: Version 23.02.18
 
 * Removed specific SMTP config info from config report. [Issue 24](https://github.com/Digressive/HyperV-Backup-Utility/issues/24)
-* Added a "simple auth edition" version of the script. [Issue #25](https://github.com/Digressive/HyperV-Backup-Utility/issues/25)
+* Added a "simple auth edition" version of the script. [Issue 25](https://github.com/Digressive/HyperV-Backup-Utility/issues/25)
 
 ### 2023-02-07: Version 23.02.07
 
@@ -165,8 +165,8 @@ This will backup all the VMs running to the backup location specified.
 
 ### 2022-06-14: Version 22.06.11
 
-* Fixed [Issue #19 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/19) - All Virtual Hard Disk folders should now be called "Virtual Hard Disks" and not some with the name "VHD".
-* Fixed [Issue #20 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/20) - If -L [path\] not configured then a non fatal error would occur as no log path was specified for the log to be output to.
+* Fixed [Issue 19 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/19) - All Virtual Hard Disk folders should now be called "Virtual Hard Disks" and not some with the name "VHD".
+* Fixed [Issue 20 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/20) - If -L [path\] not configured then a non fatal error would occur as no log path was specified for the log to be output to.
 * Fixed an issue where a VM would not be backed up if it were in the state "saved" and was present in the user configured VM list text file.
 * Added user feedback - make backup success or fail clear in the log and console.
 * Added user feedback - add "VMs backed up x/x" to email subject for clear success/fail visibility.
@@ -185,7 +185,7 @@ This will backup all the VMs running to the backup location specified.
 
 ### 2022-02-08: Version 22.02.08
 
-* Added fix for potential BSOD on Windows Server 2016 Hyper-V host when exporting VMs using VSS. The change to the registry will only happen if Windows Server 2016 is detected as the Hyper-V host and only if the registry value is in the default state. If it has been configured previously no change will be made. [Issue #17 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/17)
+* Added fix for potential BSOD on Windows Server 2016 Hyper-V host when exporting VMs using VSS. The change to the registry will only happen if Windows Server 2016 is detected as the Hyper-V host and only if the registry value is in the default state. If it has been configured previously no change will be made. [Issue 17 on GitHub](https://github.com/Digressive/HyperV-Backup-Utility/issues/17)
 
 ### 2022-01-20: Version 22.01.19
 
