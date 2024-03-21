@@ -1005,7 +1005,7 @@ else {
 
         If ($NoPerms -eq $true -And $Null -ne $CaptureStateOpt)
         {
-            Write-Log -Type Err -Evt "You cannot use Export-VM Options with -NoPerms. They will have no effect."
+            Write-Log -Type Err -Evt "You cannot use -CaptureState Options with -NoPerms. They will have no effect."
             Exit
         }
 
