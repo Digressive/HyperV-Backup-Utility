@@ -71,8 +71,9 @@ Here’s a list of all the command line switches and example configurations.
 | ------------------- | ----------- | ------- |
 | -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. | [path\] |
 | -List | Enter the path to a txt file with a list of Hyper-V VM names to backup. If this option is not configured, all running VMs will be backed up. | [path\]vms.txt |
+| -CaptureState | Enter a method to use when exporting the VM. If this option is not configured, the default method will be used. | CaptureCrashConsistentState, CaptureSavedState, CaptureDataConsistentState |
 | -Wd | The path to the working directory to use for the backup before copying it to the final backup directory. Use a directory on local fast media to improve performance. | [path\] |
-| -NoPerms | Configures the utility to shut down running VMs to do the file-copy based backup instead of using the Hyper-V export function. If no list is specified and multiple VMs are running, the process will run through the VMs alphabetically. | N/A |
+| -NoPerms | Configures the utility to shut down running VMs to do the file-copy based backup instead of using the Hyper-V export function. | N/A |
 | -Keep | Instructs the utility to keep a specified number of days worth of backups. VM backups older than the number of days specified will be deleted. | [number] |
 | -Compress | This option will create a zip file of each Hyper-V VM backup. | N/A |
 | -Sz | Configure the utility to use 7-Zip to compress the VM backups. 7-Zip must be installed in the default location ```$env:ProgramFiles``` if it is not found, Windows compression will be used. | N/A |
@@ -104,6 +105,10 @@ Here’s a list of all the command line switches and example configurations.
 This will backup all the VMs running to the backup location specified.
 
 ## Change Log
+
+### 2024-03-21: Version 24.03.21
+
+* Added -CaptureState option for the user to specify the method that Export-VM uses to capture the state of the VM whilst running. From [Issue 34](https://github.com/Digressive/HyperV-Backup-Utility/issues/34)
 
 ### 2024-03-18: Version 24.03.18
 

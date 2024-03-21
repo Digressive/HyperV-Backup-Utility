@@ -1,6 +1,7 @@
-﻿<#PSScriptInfo
+﻿
+<#PSScriptInfo
 
-.VERSION 24.03.18
+.VERSION 24.03.21
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -49,6 +50,8 @@ Param(
     $VmList,
     [alias("Wd")]
     $WorkDirUsr,
+    [alias("CaptureState")]
+    $CaptureStateOpt,
     [alias("SzOptions")]
     $SzSwitches,
     [alias("L")]
@@ -95,7 +98,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 24.03.18              
+                              Mike Galvin   https://gal.vin                     Version 24.03.21              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -107,6 +110,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     This will backup all the VMs running to the backup location specified.
 
     Use -List [path\]vms.txt to specify a list of vm names to backup.
+    Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
@@ -339,7 +343,7 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "24.03.18"
+        $ScriptVersion = "24.03.21"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
 
         try {
@@ -999,6 +1003,12 @@ else {
             Exit
         }
 
+        If ($NoPerms -eq $true -And $Null -ne $CaptureStateOpt)
+        {
+            Write-Log -Type Err -Evt "You cannot use -CaptureState Options with -NoPerms. They will have no effect."
+            Exit
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -1053,7 +1063,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 24.03.18"
+        Write-Log -Type Conf -Evt "Utility Version: 24.03.21"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
@@ -1076,6 +1086,11 @@ else {
         If ($WorkDirUsr)
         {
             Write-Log -Type Conf -Evt "Working directory: $WorkDirUsr."
+        }
+
+        If ($CaptureStateOpt)
+        {
+            Write-Log -Type Conf -Evt "Export-VM Options: $CaptureStateOpt."
         }
 
         If ($NoPerms)
@@ -1408,7 +1423,13 @@ else {
 
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
-                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                    If ($Null -ne $CaptureStateOpt)
+                    {
+                        $Vm | Export-VM -CaptureLiveState $CaptureStateOpt -Path "$WorkDir" -ErrorAction 'Stop'
+                    }
+                    else {
+                        $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                    }
                     $BackupSucc = $true
                 }
                 catch {
