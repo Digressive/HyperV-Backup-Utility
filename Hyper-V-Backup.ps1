@@ -109,7 +109,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     This will backup all the VMs running to the backup location specified.
 
     Use -List [path\]vms.txt to specify a list of vm names to backup.
-    Use -CaptureState to specify which method to use to capture the live state of the VM when exporting. Options are: [CaptureCrashConsistentState | CaptureSavedState | CaptureDataConsistentState].
+    Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
