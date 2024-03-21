@@ -49,6 +49,8 @@ Param(
     $VmList,
     [alias("Wd")]
     $WorkDirUsr,
+    [alias("CaptureState")]
+    $CaptureStateOpt,
     [alias("SzOptions")]
     $SzSwitches,
     [alias("L")]
@@ -107,6 +109,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     This will backup all the VMs running to the backup location specified.
 
     Use -List [path\]vms.txt to specify a list of vm names to backup.
+    Use -CaptureState to specify which method to use to capture the live state of the VM when exporting. Options are: [CaptureCrashConsistentState | CaptureSavedState | CaptureDataConsistentState].
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
@@ -1000,6 +1003,12 @@ else {
             Exit
         }
 
+        If ($NoPerms -eq $true -And $Null -ne $CaptureStateOpt)
+        {
+            Write-Log -Type Err -Evt "You cannot use Export-VM Options with -NoPerms. They will have no effect."
+            Exit
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -1077,6 +1086,11 @@ else {
         If ($WorkDirUsr)
         {
             Write-Log -Type Conf -Evt "Working directory: $WorkDirUsr."
+        }
+
+        If ($CaptureStateOpt)
+        {
+            Write-Log -Type Conf -Evt "Export-VM Options: $CaptureStateOpt."
         }
 
         If ($NoPerms)
@@ -1409,7 +1423,13 @@ else {
 
                 try {
                     Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
-                    $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                    If ($Null -ne $CaptureStateOpt)
+                    {
+                        $Vm | Export-VM -CaptureLiveState $CaptureStateOpt -Path "$WorkDir" -ErrorAction 'Stop'
+                    }
+                    else {
+                        $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                    }
                     $BackupSucc = $true
                 }
                 catch {
