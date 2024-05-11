@@ -106,6 +106,10 @@ This will backup all the VMs running to the backup location specified.
 
 ## Change Log
 
+### 2024-05-11: Version 24.05.11
+
+* Fixed an issue where backup success would be reported when using a working directory and the final destination directory for the backup didn't have enough disk space.
+
 ### 2024-03-21: Version 24.03.21
 
 * Added -CaptureState option for the user to specify the method that Export-VM uses to capture the state of the VM whilst running. From [Issue 34](https://github.com/Digressive/HyperV-Backup-Utility/issues/34)
