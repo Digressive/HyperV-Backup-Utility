@@ -108,7 +108,7 @@ This will backup all the VMs running to the backup location specified.
 
 ### 2024-05-11: Version 24.05.11
 
-* Fixed an issue where backup success would be reported when using a working directory and the final destination directory for the backup didn't have enough disk space.
+* Fixed an issue where backup success would be reported when using a working directory and the final destination directory for the backup didn't have enough disk space. From [Issue 27](https://github.com/Digressive/HyperV-Backup-Utility/issues/27)
 
 ### 2024-03-21: Version 24.03.21
 
