@@ -1,8 +1,8 @@
-﻿<#PSScriptInfo
+<#PSScriptInfo
 
-.VERSION 24.05.11
+.VERSION 24.06.0
 
-.GUID c7fb05cc-1e20-4277-9986-523020060668
+.GUID 5f1ddcdb-04f7-47e0-adda-ee398c020cd0
 
 .AUTHOR Mike Galvin Contact: digressive@outlook.com
 
@@ -42,6 +42,12 @@
 Param(
     [alias("BackupTo")]
     $BackupUsr,
+	[alias("BackupToSMB")]
+    $BackupSMBUsr,
+	[alias("SMBUser")]
+    $SMBUsr,
+	[ValidateScript({Test-Path -Path $_ -PathType Leaf})]
+    $SMBPwd,
     [alias("Keep")]
     $History,
     [alias("List")]
@@ -69,12 +75,12 @@ Param(
     $SmtpPort,
     [alias("User")]
     $SmtpUser,
-    [alias("Pwd")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $SmtpPwd,
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     [string]$Webh,
+	[string]$Prefix,
     [switch]$UseSsl,
     [switch]$NoPerms,
     [switch]$Compress,
@@ -97,7 +103,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 24.05.11              
+                              Mike Galvin   https://gal.vin                     Version 24.06.0              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -109,6 +115,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     This will backup all the VMs running to the backup location specified.
 
     Use -List [path\]vms.txt to specify a list of vm names to backup.
+	Use -Prefix [prefix] to specify a list of vm names starting with a certain prefixum.
     Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
@@ -123,6 +130,10 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Compress to compress the VM backups in a zip file using Windows compression.
     Use -Sz to use 7-zip 
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
+
+	To copy backup to a remote SMB share use -BackupToSMB. In that case the usage of -BackupTo will be ignored, 
+	however -WorkDirUsr is mandatory. If SMB authentication is needed -SMBUser and -SMBPwd options can be used respectively.
+	Specify the password file to use with -SMBPwd [path\]ps-script-smb-pwd.txt.	Read below at -SmtpPwd.
 
     To output a log: -L [path\].
     To remove logs produced by the utility older than X days: -LogRotate [number].
@@ -145,7 +156,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     If none is specified then the default of 25 will be used.
 
     Specify the user to access SMTP with -User [example@contoso.com]
-    Specify the password file to use with -Pwd [path\]ps-script-pwd.txt.
+    Specify the password file to use with -SmtpPwd [path\]ps-script-pwd.txt.
     Use SSL for SMTP server connection with -UseSsl.
 
     To generate an encrypted password file run the following commands
@@ -952,13 +963,18 @@ else {
     $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
     $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
 
-    If ($Null -eq $BackupUsr)
+	if($Null -eq $WorkDirUsr -And $BackupSMBUsr)
+	{
+		Write-Log -Type Err -Evt "You must specify -WorkDirUsr [path\] when exporting to SMB share."
+        Exit
+	}
+    If ($Null -eq $BackupUsr -And $Null -eq $BackupSMBUsr)
     {
-        Write-Log -Type Err -Evt "You must specify -BackupTo [path\]."
+        Write-Log -Type Err -Evt "You must specify -BackupTo [path\] or -BackupSMBTo [\\server\folder]."
         Exit
     }
-
-    else {
+    else 
+	{
         ## Test for Hyper-V feature installed on local machine.
         ## Old version of Win Serv have a different service name.
         try {
@@ -1018,8 +1034,24 @@ else {
             Write-Log -Type Err -Evt "You cannot use -CaptureState Options with -NoPerms. They will have no effect."
             Exit
         }
-
-        ## Clean User entered string
+		
+		## Map Network Drive
+		if($BackupSMBUsr)
+		{		
+			if($SMBPwd -or $SMBUsr)
+			{
+				$smbPass = Get-Content $SMBPwd | ConvertTo-SecureString
+				$smbCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SMBUsr, $smbPass
+				New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr -Credential $smbCreds | Out-Null
+			}
+			else
+			{
+				New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr | Out-Null
+			}
+			$BackupUsr = "BKPDrive:"
+		}
+		
+		## Clean User entered string
         If ($BackupUsr)
         {
             $Backup = $BackupUsr.trimend('\')
@@ -1040,10 +1072,16 @@ else {
     {
         $Vms = Get-Content $VmList | Where-Object {$_.trim() -ne ""}
     }
-
-    else {
-        $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
-    }
+	else{
+		if($Prefix)
+		{
+			$Vms = Get-VM | Where-Object {$_.Name.StartsWith($Prefix)} | Select-Object -ExpandProperty Name
+		}
+		else 
+		{
+			$Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
+		}
+	}
 
     ## Check to see if there are any VMs to process.
     If ($Vms.count -ne 0)
@@ -1073,7 +1111,7 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 24.05.11"
+        Write-Log -Type Conf -Evt "Utility Version: 24.06.0"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
