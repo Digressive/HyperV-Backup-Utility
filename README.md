@@ -70,7 +70,11 @@ Here’s a list of all the command line switches and example configurations.
 | Command Line Switch | Description | Example |
 | ------------------- | ----------- | ------- |
 | -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. | [path\] |
+| -BackupToSMB | The remote SMB path the virtual machines should be backed up to. Each VM will have its own folder inside this location. | [\\\\server\folder\] |
+| -SMBUsr | SMB username if authentication is needed. | [username] |
+| -SMBPwd | SMB user password if authentication is needed. | [path\]ps-script-smb-pwd.txt |
 | -List | Enter the path to a txt file with a list of Hyper-V VM names to backup. If this option is not configured, all running VMs will be backed up. | [path\]vms.txt |
+| -Prefix | VMs with the same prefix in their names to backup. This options is ignored when -List is present. | [string] |
 | -CaptureState | Enter a method to use when exporting the VM. If this option is not configured, the default method will be used. | CaptureCrashConsistentState, CaptureSavedState, CaptureDataConsistentState |
 | -Wd | The path to the working directory to use for the backup before copying it to the final backup directory. Use a directory on local fast media to improve performance. | [path\] |
 | -NoPerms | Configures the utility to shut down running VMs to do the file-copy based backup instead of using the Hyper-V export function. | N/A |
@@ -93,7 +97,7 @@ Here’s a list of all the command line switches and example configurations.
 | -Smtp | The DNS name or IP address of the SMTP server. | [smtp server address] |
 | -Port | The Port that should be used for the SMTP server. If none is specified then the default of 25 will be used. | [port number] |
 | -User | The user account to authenticate to the SMTP server. | [example@contoso.com] |
-| -Pwd | The txt file containing the encrypted password for SMTP authentication. | [path\]ps-script-pwd.txt |
+| -SmtpPwd | The txt file containing the encrypted password for SMTP authentication. | [path\]ps-script-pwd.txt |
 | -UseSsl | Configures the utility to connect to the SMTP server using SSL. | N/A |
 
 ## How to use
@@ -105,6 +109,11 @@ Here’s a list of all the command line switches and example configurations.
 This will backup all the VMs running to the backup location specified.
 
 ## Change Log
+
+### 2024-08-01: Version 24.08.01
+
+* Remote SMB support added.
+* VM prefix feature added.
 
 ### 2024-05-11: Version 24.05.11
 
