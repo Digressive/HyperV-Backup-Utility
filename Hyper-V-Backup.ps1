@@ -42,6 +42,14 @@
 Param(
     [alias("BackupTo")]
     $BackupUsr,
+
+    [alias("BackupToSMB")] ## new
+    $BackupSMBUsr, ## new
+    [alias("SMBUser")] ## new
+    $SMBUsr, ## new
+    [ValidateScript({Test-Path -Path $_ -PathType Leaf})] ## new
+    $SMBPwd, ## new
+
     [alias("Keep")]
     $History,
     [alias("List")]
@@ -75,6 +83,9 @@ Param(
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     [string]$Webh,
+
+    [string]$Prefix, ## new
+
     [switch]$UseSsl,
     [switch]$NoPerms,
     [switch]$Compress,
@@ -109,6 +120,9 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     This will backup all the VMs running to the backup location specified.
 
     Use -List [path\]vms.txt to specify a list of vm names to backup.
+
+    Use -Prefix [prefix] to specify a list of vm names with a prefix to backup. ## new
+
     Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
@@ -123,6 +137,10 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Compress to compress the VM backups in a zip file using Windows compression.
     Use -Sz to use 7-zip 
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
+
+    To copy backup to a remote SMB share use -BackupToSMB. In that case the usage of -BackupTo will be ignored,
+    however -Wd is mandatory. If SMB authentication is needed -SMBUser and -SMBPwd options can be used respectively.
+    Specify the password file to use with -SMBPwd [path\]ps-script-smb-pwd.txt.	Read below at -SmtpPwd.
 
     To output a log: -L [path\].
     To remove logs produced by the utility older than X days: -LogRotate [number].
@@ -952,9 +970,15 @@ else {
     $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
     $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
 
-    If ($Null -eq $BackupUsr)
+    If ($Null -eq $WorkDirUsr -And $BackupSMBUsr)
     {
-        Write-Log -Type Err -Evt "You must specify -BackupTo [path\]."
+        Write-Log -Type Err -Evt "You must specify -WorkDirUsr [path\] when exporting to SMB share."
+        Exit
+    }
+
+    If ($Null -eq $BackupUsr -Or $Null -eq $BackupSMBUsr)
+    {
+        Write-Log -Type Err -Evt "You must specify -BackupTo [path\] or -BackupSMBTo [\\server\folder]."
         Exit
     }
 
@@ -1019,6 +1043,23 @@ else {
             Exit
         }
 
+        ## Map Network Drive
+        If ($BackupSMBUsr)
+        {
+            If ($SMBPwd -or $SMBUsr)
+            {
+                $smbPass = Get-Content $SMBPwd | ConvertTo-SecureString
+                $smbCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SMBUsr, $smbPass
+                New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr -Credential $smbCreds | Out-Null
+            }
+
+            else {
+                New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr | Out-Null
+            }
+
+            $BackupUsr = "BKPDrive:"
+        }
+
         ## Clean User entered string
         If ($BackupUsr)
         {
@@ -1042,7 +1083,15 @@ else {
     }
 
     else {
-        $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
+
+        If ($Prefix)
+        {
+            $Vms = Get-VM | Where-Object {$_.Name.StartsWith($Prefix)} | Select-Object -ExpandProperty Name
+        }
+
+        else {
+            $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
+        }
     }
 
     ## Check to see if there are any VMs to process.
