@@ -138,7 +138,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -Sz to use 7-zip 
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
 
-    To copy backup to a remote SMB share use -BackupToSMB. In that case the usage of -BackupTo will be ignored,
+    To copy backup to a remote SMB share use -BackupToSMB. In that case the usage of -BackupTo will be ignored, ## new
     however -Wd is mandatory. If SMB authentication is needed -SMBUser and -SMBPwd options can be used respectively.
     Specify the password file to use with -SMBPwd [path\]ps-script-smb-pwd.txt.	Read below at -SmtpPwd.
 
