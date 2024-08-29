@@ -39,15 +39,14 @@ Hyper-V’s export operation requires that the computer account in Active Direct
 
 When a NAS, such as a QNAP device is intended to be used as an export location, Hyper-V will not be able to complete the operation as the computer account will not have access to the share on the NAS. To copy all the files necessary for a complete backup, the VM must be in an offline state for the operation to be completed. Due to this the script will put the VM in a 'Saved' state so the files can be copied. Previously the VM would be shutdown but this is a faster and safer method as the VM does not require any integrations to be put in a saved state.
 
-## Generating A Password File For SMTP Authentication
+## Generating A Credentials File For SMTP Authentication
 
-The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the following command in PowerShell on the computer and logged in with the user that will be running the utility. When you run the command, you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
+The password used for SMTP server authentication must be in an encrypted text file. To generate the password file, run the command below in PowerShell on the same computer and logged in with the user that will be running the utility. When you run the command, you will be prompted for a username and password. Enter the username and password you want to use to authenticate to your SMTP server.
 
-Please note: This is only required if you need to authenticate to the SMTP server when send the log via e-mail.
+Please note: This is only required if you need to authenticate to the SMTP server when sending the log via e-mail.
 
 ``` powershell
-$creds = Get-Credential
-$creds.Password | ConvertFrom-SecureString | Set-Content c:\scripts\ps-script-pwd.txt
+[path\]Hyper-V-Backup.ps1 -MakeCreds [filename.txt]
 ```
 
 After running the commands, you will have a text file containing the encrypted password. When configuring the -Pwd switch enter the path and file name of this file.
@@ -69,8 +68,12 @@ Here’s a list of all the command line switches and example configurations.
 
 | Command Line Switch | Description | Example |
 | ------------------- | ----------- | ------- |
-| -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. | [path\] |
-| -List | Enter the path to a txt file with a list of Hyper-V VM names to backup. If this option is not configured, all running VMs will be backed up. | [path\]vms.txt |
+| -BackupTo | The path the virtual machines should be backed up to. Each VM will have its own folder inside this location. This can be an SMB share but you must also use either -Wd or -NoPerms. | [path\] or [\\server\path] |
+| -SMBUsr | Enter the domain and user required to access the SMB share. Use only if required. | domain\user |
+| -SMBPwd | Enter the password for the above account required to access the SMB share. Use only if required. | password |
+| -AllVms | If this option is configured all VMs will be backed up. | N/A |
+| -Prefix | Use this option to specify VM names beginning with the string specified to backup. | [string] |
+| -List | Enter the path to a txt file with a list of Hyper-V VM names to backup. If this option, -Prefix and -AllVms are not configured, all running VMs will be backed up. | [path\]vms.txt |
 | -CaptureState | Enter a method to use when exporting the VM. If this option is not configured, the default method will be used. | CaptureCrashConsistentState, CaptureSavedState, CaptureDataConsistentState |
 | -Wd | The path to the working directory to use for the backup before copying it to the final backup directory. Use a directory on local fast media to improve performance. | [path\] |
 | -NoPerms | Configures the utility to shut down running VMs to do the file-copy based backup instead of using the Hyper-V export function. | N/A |
@@ -95,6 +98,7 @@ Here’s a list of all the command line switches and example configurations.
 | -User | The user account to authenticate to the SMTP server. | [example@contoso.com] |
 | -Pwd | The txt file containing the encrypted password for SMTP authentication. | [path\]ps-script-pwd.txt |
 | -UseSsl | Configures the utility to connect to the SMTP server using SSL. | N/A |
+| -MakeCreds | Use this option to create a credentials file for SMTP authentication. The file will be created in the same directory as the script. | [filename.txt] |
 
 ## How to use
 
@@ -105,6 +109,14 @@ Here’s a list of all the command line switches and example configurations.
 This will backup all the VMs running to the backup location specified.
 
 ## Change Log
+
+### 2024-08-29: Version 24.08.29
+
+* Added SMB Authentication, based on work from user: Digheads.
+* Can backup to SMB share but must also use a working directory (-wd option) or use the -NoPerms option.
+* Added -MakeCreds option to help in creation of SMTP authentication file.
+* Added -AllVms option to specify the backing up of all VMs on a Hyper-V server without the need for a list file.
+* Added -Prefix option to backup all VMs beginning with the string specified.
 
 ### 2024-05-11: Version 24.05.11
 

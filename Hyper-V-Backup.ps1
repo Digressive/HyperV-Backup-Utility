@@ -42,10 +42,8 @@
 Param(
     [alias("BackupTo")]
     $BackupUsr,
-
-    $SMBUsr, ## new
-    $SMBPwd, ## new
-
+    $SMBUsr,
+    $SMBPwd,
     [alias("Keep")]
     $History,
     [alias("List")]
@@ -76,17 +74,13 @@ Param(
     [alias("Pwd")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $SmtpPwd,
-
-    [alias("MakeCreds")] ## new
-    $MkCr, ## new
-
+    [alias("MakeCreds")]
+    $MkCr,
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     [string]$Webh,
-
-    [string]$Prefix, ## new
-    [switch]$AllVms, ## new
-
+    [string]$Prefix,
+    [switch]$AllVms,
     [switch]$UseSsl,
     [switch]$NoPerms,
     [switch]$Compress,
@@ -124,8 +118,8 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
 
     ---- Virtual Machine Selection Options ----
     Use -List [path\]vms.txt to specify a list of vm names to backup.
-    Use -Prefix [prefix] to specify a list of vm names with a prefix to backup. ## new
-    Use -AllVMs to specify all VMs to backup. ## new
+    Use -Prefix [prefix] to specify a list of vm names with a prefix to backup.
+    Use -AllVMs to specify all VMs to backup.
 
     Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
@@ -1062,7 +1056,7 @@ else {
             Exit
         }
 
-        ## Make PSDrive with credentials ## New
+        ## Smb Mapping with credentials
         If ($SMBPwd -And $SMBUsr)
         {
             New-SmbMapping -RemotePath "$BackupUsr" -UserName $SMBUsr -Password $SMBPwd | Out-Null
