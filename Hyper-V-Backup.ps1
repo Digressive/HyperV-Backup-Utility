@@ -80,11 +80,17 @@ Param(
     [alias("Pwd")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     $SmtpPwd,
+
+    [alias("MakeCreds")] ## new
+    $MkCr, ## new
+
     [Alias("Webhook")]
     [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
     [string]$Webh,
 
     [string]$Prefix, ## new
+
+    [switch]$AllVms,
 
     [switch]$UseSsl,
     [switch]$NoPerms,
@@ -960,6 +966,13 @@ else {
             }
         }
     }
+    
+    Function CredsGen()
+    {
+        $credsGen = Get-Credential
+        $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
+    }
+
     ##
     ## End of backup Options functions
     ##
@@ -969,6 +982,12 @@ else {
     $OSVMin = [environment]::OSVersion.Version | Select-Object -expand minor
     $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
     $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
+
+    If ($MkCr)
+    {
+        CredsGen
+        Exit
+    }
 
     If ($Null -eq $WorkDirUsr -And $BackupSMBUsr)
     {
@@ -1075,7 +1094,8 @@ else {
     ## Setting an easier to use variable for computer name of the Hyper-V server.
     $Vs = $Env:ComputerName
 
-    ## If a VM list file is configured, get the content of the file, otherwise just get the running VMs.
+    ## VM selection section
+    ## If a VM list file is configured, get the content of the file, otherwise move on to the next option.
     ## Clean list if it has empty lines.
     If ($VmList)
     {
@@ -1083,6 +1103,10 @@ else {
     }
 
     else {
+        If ($AllVms)
+        {
+            $Vms = Get-VM | Select-Object -ExpandProperty Name
+        }
 
         If ($Prefix)
         {
