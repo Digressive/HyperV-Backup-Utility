@@ -969,7 +969,7 @@ else {
     
     Function CredsGen()
     {
-        $credsGen = Get-Credential
+        $credsGen = Get-Credential | Out-Null
         $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
     }
 
@@ -983,6 +983,7 @@ else {
     $OSVBui = [environment]::OSVersion.Version | Select-Object -expand build
     $OSV = "$OSVMaj" + "." + "$OSVMin" + "." + "$OSVBui"
 
+    ## Run make creds function to generate an encrypted password file
     If ($MkCr)
     {
         CredsGen
