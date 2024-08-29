@@ -970,12 +970,16 @@ else {
     Function CredsGen()
     {
         $credsGen = Get-Credential
+        $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
+
         If ($null -eq $credsGen)
         {
             Write-Log -Type Err -Evt "No credentials were specified."
         }
 
-        $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
+        else {
+            Write-Log -Type Succ -Evt "Credentials file created: $PSScriptRoot\$MkCr"
+        }
     }
 
     ##
