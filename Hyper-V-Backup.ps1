@@ -972,8 +972,7 @@ else {
         $credsGen = Get-Credential
         If ($null -eq $credsGen)
         {
-            Write-Log -Type Info -Evt "No credentials were specified."
-            Exit
+            Write-Log -Type Err -Evt "No credentials were specified."
         }
 
         $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
@@ -992,7 +991,6 @@ else {
     ## Run make creds function to generate an encrypted password file
     If ($MkCr)
     {
-        Write-Log -Type Info -Evt "Please enter the credentials box."
         CredsGen
         Exit
     }
