@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-.VERSION 24.05.11
+.VERSION 24.08.29
 
 .GUID c7fb05cc-1e20-4277-9986-523020060668
 
@@ -43,11 +43,7 @@ Param(
     [alias("BackupTo")]
     $BackupUsr,
 
-    [alias("BackupToSMB")] ## new
-    $BackupSMBUsr, ## new
-    [alias("SMBUser")] ## new
     $SMBUsr, ## new
-    [ValidateScript({Test-Path -Path $_ -PathType Leaf})] ## new
     $SMBPwd, ## new
 
     [alias("Keep")]
@@ -89,8 +85,7 @@ Param(
     [string]$Webh,
 
     [string]$Prefix, ## new
-
-    [switch]$AllVms,
+    [switch]$AllVms, ## new
 
     [switch]$UseSsl,
     [switch]$NoPerms,
@@ -114,7 +109,7 @@ If ($NoBanner -eq $False)
     |_|  |_|\__, | .__/ \___|_|    \/     |____/ \__,_|\___|_|\_\\__,_| .__/   \____/ \__|_|_|_|\__|\__, |    
              __/ | |                                                  | |                            __/ |    
             |___/|_|                                                  |_|                           |___/     
-                              Mike Galvin   https://gal.vin                     Version 24.05.11              
+                              Mike Galvin   https://gal.vin                     Version 24.08.29              
                          Donate: https://www.paypal.me/digressive             See -help for usage             
 "
 }
@@ -125,9 +120,12 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     From a terminal run: [path\]Hyper-V-Backup.ps1 -BackupTo [path\]
     This will backup all the VMs running to the backup location specified.
 
-    Use -List [path\]vms.txt to specify a list of vm names to backup.
+    Use -SMBUsr [username] and -SMBPwd [password] to provide authentication to the backup location, such as an SMB share.
 
+    ---- Virtual Machine Selection Options ----
+    Use -List [path\]vms.txt to specify a list of vm names to backup.
     Use -Prefix [prefix] to specify a list of vm names with a prefix to backup. ## new
+    Use -AllVMs to specify all VMs to backup. ## new
 
     Use -CaptureState to specify which method to use when exporting.
     Use -Wd [path\] to configure a working directory for the backup process.
@@ -140,27 +138,27 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     -NoPerms should only be used when a regular backup cannot be performed.
     Please note: this will cause the VMs to shutdown during the backup process.
 
+    ---- Compression Options ----
     Use -Compress to compress the VM backups in a zip file using Windows compression.
     Use -Sz to use 7-zip 
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
 
-    To copy backup to a remote SMB share use -BackupToSMB. In that case the usage of -BackupTo will be ignored, ## new
-    however -Wd is mandatory. If SMB authentication is needed -SMBUser and -SMBPwd options can be used respectively.
-    Specify the password file to use with -SMBPwd [path\]ps-script-smb-pwd.txt.	Read below at -SmtpPwd.
-
+    ---- Logging Options ----
     To output a log: -L [path\].
     To remove logs produced by the utility older than X days: -LogRotate [number].
     Run with no ASCII banner: -NoBanner
 
+    ---- Webhook Options ----
     To send the log to a webhook on job completion:
     Specify a txt file containing the webhook URI with -Webhook [path\]webhook.txt
 
+    ---- Email Options ----
     To use the 'email log' function:
     Specify the subject line with -Subject ""'[subject line]'"" If you leave this blank a default subject will be used
     Make sure to encapsulate it with double & single quotes as per the example for Powershell to read it correctly.
 
     Specify the 'to' address with -SendTo [example@contoso.com]
-    For multiple address, separate with a comma.
+    For multiple addresses, separate with a comma.
 
     Specify the 'from' address with -From [example@contoso.com]
     Specify the SMTP server with -Smtp [smtp server name]
@@ -169,14 +167,12 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     If none is specified then the default of 25 will be used.
 
     Specify the user to access SMTP with -User [example@contoso.com]
-    Specify the password file to use with -Pwd [path\]ps-script-pwd.txt.
+    Specify the password file to use with -Pwd [path\]filename.txt.
     Use SSL for SMTP server connection with -UseSsl.
 
-    To generate an encrypted password file run the following commands
-    on the computer and the user that will run the script:
-"
-    Write-Host -Object '    $creds = Get-Credential
-    $creds.Password | ConvertFrom-SecureString | Set-Content [path\]ps-script-pwd.txt'
+    ---- How to generate a credentials file for SMTP authentication ----
+    To generate an encrypted password file run this script with -MakeCreds filename.txt
+    on the computer and running as the user that will run the backup."
 }
 
 else {
@@ -367,7 +363,7 @@ else {
     ## Function for Update Check
     Function UpdateCheck()
     {
-        $ScriptVersion = "24.05.11"
+        $ScriptVersion = "24.08.29"
         $RawSource = "https://raw.githubusercontent.com/Digressive/HyperV-Backup-Utility/master/Hyper-V-Backup.ps1"
 
         try {
@@ -999,15 +995,9 @@ else {
         Exit
     }
 
-    If ($Null -eq $WorkDirUsr -And $BackupSMBUsr)
+    If ($null -eq $BackupUsr)
     {
-        Write-Log -Type Err -Evt "You must specify -WorkDirUsr [path\] when exporting to SMB share."
-        Exit
-    }
-
-    If ($Null -eq $BackupUsr -Or $Null -eq $BackupSMBUsr)
-    {
-        Write-Log -Type Err -Evt "You must specify -BackupTo [path\] or -BackupSMBTo [\\server\folder]."
+        Write-Log -Type Err -Evt "You must specify -BackupTo [path\]."
         Exit
     }
 
@@ -1072,21 +1062,10 @@ else {
             Exit
         }
 
-        ## Map Network Drive
-        If ($BackupSMBUsr)
+        ## Make PSDrive with credentials ## New
+        If ($SMBPwd -And $SMBUsr)
         {
-            If ($SMBPwd -or $SMBUsr)
-            {
-                $smbPass = Get-Content $SMBPwd | ConvertTo-SecureString
-                $smbCreds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $SMBUsr, $smbPass
-                New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr -Credential $smbCreds | Out-Null
-            }
-
-            else {
-                New-PSDrive -Name BKPDrive -PSProvider FileSystem -Root $BackupSMBUsr | Out-Null
-            }
-
-            $BackupUsr = "BKPDrive:"
+            New-SmbMapping -RemotePath "$BackupUsr" -UserName $SMBUsr -Password $SMBPwd | Out-Null
         }
 
         ## Clean User entered string
@@ -1099,6 +1078,14 @@ else {
         {
             $WorkDir = $WorkDirUsr.trimend('\')
         }
+
+        If ($BackupUsr.StartsWith("\\") -And $NoPerms -eq $false -And $null -eq $WorkDirUsr)
+        {
+            Write-Log -Type Err -Evt "You cannot use an SMB share without -Wd specified, or -NoPerms not set."
+            Write-Log -Type Err -Evt "It is not possible to live export a VM to a SMB share."
+            Write-Log -Type Err -Evt "If you wish to use an SMB share with authentication, run -MakeCreds and read the documentation."
+            Exit
+        }
     }
 
     ## Setting an easier to use variable for computer name of the Hyper-V server.
@@ -1107,24 +1094,31 @@ else {
     ## VM selection section
     ## If a VM list file is configured, get the content of the file, otherwise move on to the next option.
     ## Clean list if it has empty lines.
+    If ($VmList -And $AllVms -Or $Prefix)
+    {
+        Write-Log -Type Err -Evt "With a VM list file configured, -AllVMs and -Prefix will have no effect."
+    }
+
     If ($VmList)
     {
         $Vms = Get-Content $VmList | Where-Object {$_.trim() -ne ""}
     }
 
     else {
-        If ($AllVms)
-        {
-            $Vms = Get-VM | Select-Object -ExpandProperty Name
-        }
-
         If ($Prefix)
         {
             $Vms = Get-VM | Where-Object {$_.Name.StartsWith($Prefix)} | Select-Object -ExpandProperty Name
         }
 
         else {
-            $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
+            If ($AllVms)
+            {
+                $Vms = Get-VM | Select-Object -ExpandProperty Name
+            }
+
+            else {
+                $Vms = Get-VM | Where-Object {$_.State -eq 'Running'} | Select-Object -ExpandProperty Name
+            }
         }
     }
 
@@ -1156,10 +1150,20 @@ else {
         ## Display the current config and log if configured.
         ##
         Write-Log -Type Conf -Evt "--- Running with the following config ---"
-        Write-Log -Type Conf -Evt "Utility Version: 24.05.11"
+        Write-Log -Type Conf -Evt "Utility Version: 24.08.29"
         UpdateCheck ## Run Update checker function
         Write-Log -Type Conf -Evt "Hostname: $Vs."
         Write-Log -Type Conf -Evt "Windows Version: $OSV."
+
+        If ($Prefix)
+        {
+            Write-Log -Type Conf -Evt "Prefix config: $Prefix."
+        }
+
+        If ($AllVms)
+        {
+            Write-Log -Type Conf -Evt "All VMs will be backed up."
+        }
 
         If ($Vms)
         {
@@ -1174,6 +1178,11 @@ else {
         If ($BackupUsr)
         {
             Write-Log -Type Conf -Evt "Backup directory: $BackupUsr."
+        }
+
+        If ($SMBUsr -And $SMBPwd)
+        {
+            Write-Log -Type Conf -Evt "SMB Auth: Configured"
         }
 
         If ($WorkDirUsr)
@@ -1266,7 +1275,7 @@ else {
         ## Display current config ends here.
         ##
 
-        ## For Success/Fail stats
+        ## For Success/Fail stats.
         $Succi = 0
         $Faili = 0
 
@@ -1278,179 +1287,183 @@ else {
         {
             ForEach ($Vm in $Vms)
             {
-                ## Get VM info
-                try {
-                    $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
-                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [Current Size = $($VhdSize.FileSizeGB)GB - Max Size = $($VhdSize.MaxSizeGB)GB]"
-                }
-                catch {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
-                }
-
-                $VmFixed = $Vm.replace(".","-")
-                $VmInfo = Get-VM -Name $Vm
-
-                ## Remove old backups if -LowDisk is configured
-                If ($LowDisk)
+                $VmTested = Get-VM -Name $Vm -ErrorAction SilentlyContinue
+                If ($null -eq $VmTested)
                 {
-                    RemoveOld
-                }
-
-                ## Test for the existence of a previous VM export. If it exists, delete it.
-                If (Test-Path -Path "$WorkDir\$Vm")
-                {
-                    Remove-Item "$WorkDir\$Vm" -Recurse -Force
-                }
-
-                ## Create directories for the VM export.
-                try {
-                    New-Item "$WorkDir\$Vm" -ItemType Directory -Force | Out-Null
-                    New-Item "$WorkDir\$Vm\Virtual Machines" -ItemType Directory -Force | Out-Null
-                    New-Item "$WorkDir\$Vm\Virtual Hard Disks" -ItemType Directory -Force | Out-Null
-                    New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
-                    $BackupSucc = $true
-                }
-                catch {
-                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    $BackupSucc = $false
-                }
-
-                ## Check for VM running
-                If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
-                {
-                    $VMwasRunning = $true
-                    Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
-                    Stop-VM -Name $Vm -Save
-                }
-
-                else {
-                    $VMwasRunning = $false
-                    Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
-                }
-
-                ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
-                If ($OptimiseVHD)
-                {
-                    OptimVHD
-                }
-
-                ##
-                ## Copy the VM config files and log if there is an error.
-                ##
-
-                ## Check for VM being in the correct state before continuing
-                $VmState = Get-Vm -Name $Vm
-
-                If ($VmState.State -ne 'Off' -OR $VmState.State -ne 'Saved' -AND $VmState.Status -ne 'Operating normally')
-                {
-                    do {
-                        Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
-                        Start-Sleep -S 60
-                    } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
-                }
-
-                $StartTime = $(get-date)
-
-                try {
-                    Write-Log -Type Info -Evt "(VM:$Vm) Copying config files"
-                    Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
-                    Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
-                    $BackupSucc = $true
-                }
-                catch {
-                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    $BackupSucc = $false
-                }
-                ##
-                ## End of VM config files.
-                ##
-
-                ##
-                ## Copy the VHDs and log if there is an error.
-                ##
-                try {
-                    Write-Log -Type Info -Evt "(VM:$Vm) Copying VHD files"
-                    Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force
-                    $BackupSucc = $true
-                }
-                catch {
-                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    $BackupSucc = $false
-                }
-                ##
-                ## End of VHDs.
-                ##
-
-                ## Get the VM snapshots/checkpoints.
-                $Snaps = Get-VMSnapshot $Vm
-
-                ForEach ($Snap in $Snaps)
-                {
-                    ##
-                    ## Copy the snapshot config files and log if there is an error.
-                    ##
-                    try {
-                        Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot config files"
-                        Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
-                        Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
-                        $BackupSucc = $true
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        $BackupSucc = $false
-                    }
-                    ##
-                    ## End of snapshot config.
-                    ##
-
-                    ## Copy the snapshot root VHD.
-                    try {
-                        Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot root VHD files"
-                        Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force -ErrorAction 'Stop'
-                        $BackupSucc = $true
-                    }
-                    catch {
-                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                        $BackupSucc = $false
-                    }
-                }
-
-                If ($VMwasRunning)
-                {
-                    Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
-                    Start-VM $Vm
-                    Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds..."
-                    Start-Sleep -S 60
-                }
-
-                ## Remove old backups if -LowDisk is NOT configured
-                If ($LowDisk -eq $false)
-                {
-                    RemoveOld
-                }
-
-                If ($BackupSucc)
-                {
-                    OptionsRun
-                }
-
-                If ($BackupSucc)
-                {
-                    Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
-                    $Succi = $Succi+1
-                }
-                else {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Backup failed"
+                    Write-Log -Type Err -Evt "VM name: $Vm was not found. Skipping backup."
                     $Faili = $Faili+1
                 }
 
-                $elapsedTime = $(get-date) - $StartTime
-                $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
-                Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
+                else {
+                    ## Get VM info.
+                    $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
+                    Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [Current Size = $($VhdSize.FileSizeGB)GB - Max Size = $($VhdSize.MaxSizeGB)GB]"
 
-                If ($ProgCheck)
-                {
-                    Notify
+                    $VmFixed = $Vm.replace(".","-")
+                    $VmInfo = Get-VM -Name $Vm
+
+                    ## Remove old backups first if -LowDisk is configured.
+                    If ($LowDisk)
+                    {
+                        RemoveOld
+                    }
+
+                    ## Test for the existence of a previous VM export. If it exists, delete it.
+                    If (Test-Path -Path "$WorkDir\$Vm")
+                    {
+                        Remove-Item "$WorkDir\$Vm" -Recurse -Force
+                    }
+
+                    ## Create directories for the VM export.
+                    try {
+                        New-Item "$WorkDir\$Vm" -ItemType Directory -Force | Out-Null
+                        New-Item "$WorkDir\$Vm\Virtual Machines" -ItemType Directory -Force | Out-Null
+                        New-Item "$WorkDir\$Vm\Virtual Hard Disks" -ItemType Directory -Force | Out-Null
+                        New-Item "$WorkDir\$Vm\Snapshots" -ItemType Directory -Force | Out-Null
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+
+                    ## Check for VM running
+                    If (Get-VM | Where-Object {$VmInfo.State -eq 'Running'})
+                    {
+                        $VMwasRunning = $true
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM is running, saving state"
+                        Stop-VM -Name $Vm -Save
+                    }
+
+                    else {
+                        $VMwasRunning = $false
+                        Write-Log -Type Info -Evt "(VM:$Vm) VM not running"
+                    }
+
+                    ## If -OptimiseVHD option is set attempt to optimise the VMs VHDs
+                    If ($OptimiseVHD)
+                    {
+                        OptimVHD
+                    }
+
+                    ##
+                    ## Copy the VM config files and log if there is an error.
+                    ##
+
+                    ## Check for VM being in the correct state before continuing
+                    $VmState = Get-Vm -Name $Vm
+
+                    If ($VmState.State -ne 'Off' -OR $VmState.State -ne 'Saved' -AND $VmState.Status -ne 'Operating normally')
+                    {
+                        do {
+                            Write-Log -Type Err -Evt "(VM:$Vm) VM not in the desired state. Waiting 60 seconds..."
+                            Start-Sleep -S 60
+                        } until ($VmState.State -eq 'Off' -OR $VmState.State -eq 'Saved' -AND $VmState.Status -eq 'Operating normally')
+                    }
+
+                    $StartTime = $(get-date)
+
+                    try {
+                        Write-Log -Type Info -Evt "(VM:$Vm) Copying config files"
+                        Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id)" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
+                        Copy-Item "$($VmInfo.ConfigurationLocation)\Virtual Machines\$($VmInfo.id).*" "$WorkDir\$Vm\Virtual Machines\" -Recurse -Force
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+                    ##
+                    ## End of VM config files.
+                    ##
+
+                    ##
+                    ## Copy the VHDs and log if there is an error.
+                    ##
+                    try {
+                        Write-Log -Type Info -Evt "(VM:$Vm) Copying VHD files"
+                        Copy-Item $VmInfo.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+                    ##
+                    ## End of VHDs.
+                    ##
+
+                    ## Get the VM snapshots/checkpoints.
+                    $Snaps = Get-VMSnapshot $Vm
+
+                    ForEach ($Snap in $Snaps)
+                    {
+                        ##
+                        ## Copy the snapshot config files and log if there is an error.
+                        ##
+                        try {
+                            Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot config files"
+                            Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id)" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
+                            Copy-Item "$($VmInfo.ConfigurationLocation)\Snapshots\$($Snap.id).*" "$WorkDir\$Vm\Snapshots\" -Recurse -Force
+                            $BackupSucc = $true
+                        }
+                        catch {
+                            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            $BackupSucc = $false
+                        }
+                        ##
+                        ## End of snapshot config.
+                        ##
+
+                        ## Copy the snapshot root VHD.
+                        try {
+                            Write-Log -Type Info -Evt "(VM:$Vm) Copying Snapshot root VHD files"
+                            Copy-Item $Snap.HardDrives.Path -Destination "$WorkDir\$Vm\Virtual Hard Disks\" -Recurse -Force -ErrorAction 'Stop'
+                            $BackupSucc = $true
+                        }
+                        catch {
+                            $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                            $BackupSucc = $false
+                        }
+                    }
+
+                    If ($VMwasRunning)
+                    {
+                        Write-Log -Type Info -Evt "(VM:$Vm) Starting VM"
+                        Start-VM $Vm
+                        Write-Log -Type Info -Evt "(VM:$Vm) Waiting 60 seconds..."
+                        Start-Sleep -S 60
+                    }
+
+                    ## Remove old backups if -LowDisk is NOT configured
+                    If ($LowDisk -eq $false)
+                    {
+                        RemoveOld
+                    }
+
+                    If ($BackupSucc)
+                    {
+                        OptionsRun
+                    }
+
+                    If ($BackupSucc)
+                    {
+                        Write-Log -Type Succ -Evt "(VM:$Vm) Backup Successful"
+                        $Succi = $Succi+1
+                    }
+                    else {
+                        Write-Log -Type Err -Evt "(VM:$Vm) Backup failed"
+                        $Faili = $Faili+1
+                    }
+
+                    $elapsedTime = $(get-date) - $StartTime
+                    $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+                    Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
+
+                    If ($ProgCheck)
+                    {
+                        Notify
+                    }
                 }
             }
         }
@@ -1466,25 +1479,28 @@ else {
         else {
             ForEach ($Vm in $Vms)
             {
-                ## Get VM info
-                try {
+                $VmTested = Get-VM -Name $Vm -ErrorAction SilentlyContinue
+                If ($null -eq $VmTested)
+                {
+                    Write-Log -Type Err -Evt "VM name: $Vm was not found. Could not get any info."
+                }
+
+                else {
+                    ## Get VM info
                     $VhdSize = Get-VHD -Path $($Vm | Get-VMHardDiskDrive | Select-Object -ExpandProperty "Path") | Select-Object @{Name = "FileSizeGB"; Expression = {[math]::ceiling($_.FileSize/1GB)}}, @{Name = "MaxSizeGB"; Expression = {[math]::ceiling($_.Size/1GB)}}
                     Write-Log -Type Info -Evt "(VM:$Vm) has [$((Get-VMProcessor $Vm).Count)] CPU cores, [$([math]::ceiling((Get-VMMemory $Vm).Startup / 1gb))GB] RAM, Storage: [Current Size = $($VhdSize.FileSizeGB)GB - Max Size = $($VhdSize.MaxSizeGB)GB]"
-                }
-                catch {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Error getting VM info: $($_.Exception.Message)"
-                }
 
-                If (Test-Path -Path "$WorkDir\$Vm")
-                {
-                    Remove-Item "$WorkDir\$Vm" -Recurse -Force
-                }
-
-                If ($WorkDir -ne $Backup)
-                {
-                    If (Test-Path -Path "$Backup\$Vm")
+                    If (Test-Path -Path "$WorkDir\$Vm")
                     {
-                        Remove-Item "$Backup\$Vm" -Recurse -Force
+                        Remove-Item "$WorkDir\$Vm" -Recurse -Force
+                    }
+
+                    If ($WorkDir -ne $Backup)
+                    {
+                        If (Test-Path -Path "$Backup\$Vm")
+                        {
+                            Remove-Item "$Backup\$Vm" -Recurse -Force
+                        }
                     }
                 }
             }
@@ -1493,7 +1509,7 @@ else {
             ## Don't want to mess up anyone's config. :)
             If ($OSV -eq "10.0.14393")
             {
-                If ($null -eq (get-ItemProperty -literalPath HKLM:\System\CurrentControlSet\Services\VSS\Diag\).'(Default)')
+                If ($null -eq (Get-ItemProperty -LiteralPath HKLM:\System\CurrentControlSet\Services\VSS\Diag\).'(Default)')
                 {
                     $RegVSSFix = $True
                     Set-ItemProperty -Path HKLM:\System\CurrentControlSet\Services\VSS\Diag -Name "(default)" -Value "Disabled"
@@ -1504,60 +1520,69 @@ else {
             ## Do a regular export of the VMs.
             ForEach ($Vm in $Vms)
             {
-                $VmFixed = $Vm.replace(".","-")
-
-                ## Remove old backups if -LowDisk is configured
-                If ($LowDisk)
+                $VmTested = Get-VM -Name $Vm -ErrorAction SilentlyContinue
+                If ($null -eq $VmTested)
                 {
-                    RemoveOld
-                }
-
-                $StartTime = $(get-date)
-
-                try {
-                    Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
-                    If ($Null -ne $CaptureStateOpt)
-                    {
-                        $Vm | Export-VM -CaptureLiveState $CaptureStateOpt -Path "$WorkDir" -ErrorAction 'Stop'
-                    }
-                    else {
-                        $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
-                    }
-                    $BackupSucc = $true
-                }
-                catch {
-                    $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
-                    $BackupSucc = $false
-                }
-
-                ## Remove old backups if -LowDisk is NOT configured
-                If ($LowDisk -eq $false)
-                {
-                    RemoveOld
-                }
-
-                If ($BackupSucc)
-                {
-                    OptionsRun
-                }
-
-                If ($BackupSucc)
-                {
-                    Write-Log -Type Succ -Evt "(VM:$Vm) Export Successful"
-                    $Succi = $Succi+1
-                }
-                else {
-                    Write-Log -Type Err -Evt "(VM:$Vm) Export failed"
+                    Write-Log -Type Err -Evt "VM name: $Vm was not found. Skipping backup."
                     $Faili = $Faili+1
                 }
 
-                $elapsedTime = $(get-date) - $StartTime
-                $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
-                Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
+                else {
+                    $VmFixed = $Vm.replace(".","-")
 
-                If ($ProgCheck)
-                {
-                    Notify
+                    ## Remove old backups if -LowDisk is configured
+                    If ($LowDisk)
+                    {
+                        RemoveOld
+                    }
+
+                    $StartTime = $(get-date)
+
+                    try {
+                        Write-Log -Type Info -Evt "(VM:$Vm) Attempting to export VM"
+                        If ($Null -ne $CaptureStateOpt)
+                        {
+                            $Vm | Export-VM -CaptureLiveState $CaptureStateOpt -Path "$WorkDir" -ErrorAction 'Stop'
+                        }
+                        else {
+                            $Vm | Export-VM -Path "$WorkDir" -ErrorAction 'Stop'
+                        }
+                        $BackupSucc = $true
+                    }
+                    catch {
+                        $_.Exception.Message | Write-Log -Type Err -Evt "(VM:$Vm) $_"
+                        $BackupSucc = $false
+                    }
+
+                    ## Remove old backups if -LowDisk is NOT configured
+                    If ($LowDisk -eq $false)
+                    {
+                        RemoveOld
+                    }
+
+                    If ($BackupSucc)
+                    {
+                        OptionsRun
+                    }
+
+                    If ($BackupSucc)
+                    {
+                        Write-Log -Type Succ -Evt "(VM:$Vm) Export Successful"
+                        $Succi = $Succi+1
+                    }
+                    else {
+                        Write-Log -Type Err -Evt "(VM:$Vm) Export failed"
+                        $Faili = $Faili+1
+                    }
+
+                    $elapsedTime = $(get-date) - $StartTime
+                    $totalTime = "{0:HH:mm:ss}" -f ([datetime]$elapsedTime.Ticks)
+                    Write-Log -Type Info -Evt "(VM:$Vm) Processed in $totalTime"
+
+                    If ($ProgCheck)
+                    {
+                        Notify
+                    }
                 }
             }
 
@@ -1583,8 +1608,11 @@ else {
 
     Write-Log -Type Info -Evt "Process finished."
     Write-Log -Type Info -Evt "Number of VMs to Backup:$($Vms.count)"
-    Write-Log -Type Info -Evt "Backups Successful:$Succi"
-    Write-Log -Type Info -Evt "Backups Failed:$Faili"
+    If ($($Vms.count) -ne 0)
+    {
+        Write-Log -Type Info -Evt "Backups Successful:$Succi"
+        Write-Log -Type Info -Evt "Backups Failed:$Faili"
+    }
 
     If ($Null -ne $LogHistory)
     {
