@@ -970,7 +970,7 @@ else {
     Function CredsGen()
     {
         $credsGen = Get-Credential
-        $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr | Out-Null
+        $credsGen.Password | ConvertFrom-SecureString | Set-Content $PSScriptRoot\$MkCr
     }
 
     ##
