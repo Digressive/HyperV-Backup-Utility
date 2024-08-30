@@ -1072,14 +1072,6 @@ else {
         {
             $WorkDir = $WorkDirUsr.trimend('\')
         }
-
-        If ($BackupUsr.StartsWith("\\") -And $NoPerms -eq $false -And $null -eq $WorkDirUsr)
-        {
-            Write-Log -Type Err -Evt "You cannot use an SMB share without -Wd specified, or -NoPerms not set."
-            Write-Log -Type Err -Evt "It is not possible to live export a VM to a SMB share."
-            Write-Log -Type Err -Evt "If you wish to use an SMB share with authentication, run -MakeCreds and read the documentation."
-            Exit
-        }
     }
 
     ## Setting an easier to use variable for computer name of the Hyper-V server.
