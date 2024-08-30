@@ -111,18 +111,18 @@ If ($NoBanner -eq $False)
 If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
 {
     Write-Host -Object " Usage:
-    From a terminal run: [path\]Hyper-V-Backup.ps1 -BackupTo [path\]
+    From a terminal run: [path\Hyper-V-Backup.ps1] -BackupTo [path]
     This will backup all the VMs running to the backup location specified.
 
     Use -SMBUsr [username] and -SMBPwd [password] to provide authentication to the backup location, such as an SMB share.
 
     ---- Virtual Machine Selection Options ----
-    Use -List [path\]vms.txt to specify a list of vm names to backup.
+    Use -List [path\vms.txt] to specify a list of vm names to backup.
     Use -Prefix [prefix] to specify a list of vm names with a prefix to backup.
     Use -AllVMs to specify all VMs to backup.
 
     Use -CaptureState to specify which method to use when exporting.
-    Use -Wd [path\] to configure a working directory for the backup process.
+    Use -Wd [path] to configure a working directory for the backup process.
     Use -Keep [number] to specify how many days worth of backup to keep.
     Use -ShortDate to use only the Year, Month and Day in backup filenames.
     Use -LowDisk to remove old backups before new ones are created. For low disk space situations.
@@ -138,13 +138,13 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     Use -SzOptions ""'-t7z,-v2g,-ppassword'"" to specify 7-zip options like file type, split files or password.
 
     ---- Logging Options ----
-    To output a log: -L [path\].
+    To output a log: -L [path].
     To remove logs produced by the utility older than X days: -LogRotate [number].
     Run with no ASCII banner: -NoBanner
 
     ---- Webhook Options ----
     To send the log to a webhook on job completion:
-    Specify a txt file containing the webhook URI with -Webhook [path\]webhook.txt
+    Specify a txt file containing the webhook URI with -Webhook [path\webhook.txt]
 
     ---- Email Options ----
     To use the 'email log' function:
@@ -161,7 +161,7 @@ If ($PSBoundParameters.Values.Count -eq 0 -or $Help)
     If none is specified then the default of 25 will be used.
 
     Specify the user to access SMTP with -User [example@contoso.com]
-    Specify the password file to use with -Pwd [path\]filename.txt.
+    Specify the password file to use with -Pwd [path\filename.txt].
     Use SSL for SMTP server connection with -UseSsl.
 
     ---- How to generate a credentials file for SMTP authentication ----
@@ -991,7 +991,7 @@ else {
 
     If ($null -eq $BackupUsr)
     {
-        Write-Log -Type Err -Evt "You must specify -BackupTo [path\]."
+        Write-Log -Type Err -Evt "You must specify -BackupTo [path]."
         Exit
     }
 
@@ -1028,19 +1028,19 @@ else {
 
         If ($Null -eq $LogPathUsr -And $Null -ne $LogHistory)
         {
-            Write-Log -Type Err -Evt "You must specify -L [path\] to use -LogRotate [number]."
+            Write-Log -Type Err -Evt "You must specify -L [path] to use -LogRotate [number]."
             Exit
         }
 
         If ($Null -eq $LogPathUsr -And $SmtpServer)
         {
-            Write-Log -Type Err -Evt "You must specify -L [path\] to use the email log function."
+            Write-Log -Type Err -Evt "You must specify -L [path] to use the email log function."
             Exit
         }
 
         If ($Null -eq $LogPathUsr -And $Webh)
         {
-            Write-Log -Type Err -Evt "You must specify -L [path\] to use send the log to a webhook."
+            Write-Log -Type Err -Evt "You must specify -L [path] to use send the log to a webhook."
             Exit
         }
 
