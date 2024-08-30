@@ -27,11 +27,15 @@ Please report any problems via the ‘issues’ tab on GitHub.
 * Tested on Windows 11, Windows 10, Windows Server 2022, Windows Server 2019 and Windows Server 2016.
 * The backup log can be sent via email and/or webhook.
 
+## SMB share support
+
+An SMB share can be used as a backup location by specifying the UNC path (\\server\share) with the -BackupTo option. Please note that you must use either a local working directory (-Wd path/) or the -NoPerms option if your SMB share host and Hyper-V host are not members of an Active Directory domain. Hyper-V cannot perform a live export of VMs to a network share without the Hyper-V host having specific permissions to the share which are generally available when using Windows servers in Active Directory and not available when suing a NAS appliance such as TrueNAS, QNAP or Synology.
+
 ## 7-Zip support
 
 I've implemented support for 7-Zip into the script. You should be able to use any option that 7-zip supports, although currently the only options I've tested fully are '-t' archive type, '-p' password and '-v' split files.
 
-## When to use the -NoPerms switch
+## When to use the -NoPerms option
 
 The -NoPerms switch is intended as a workaround when used in an environment where the Hyper-V host cannot be given the required permissions to run a regular export to a remote device such as a NAS device.
 
