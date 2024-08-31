@@ -114,6 +114,7 @@ This will backup all the VMs running to the backup location specified.
 
 ### 2024-08-29: Version 24.08.29
 
+* Added Sponsorship information to the projects Github.
 * Added SMB Authentication, based on work from [PR 37](https://github.com/Digressive/HyperV-Backup-Utility/pull/37)
 * Added -MakeCreds option to help in creation of SMTP authentication file.
 * Added -AllVms option to specify the backing up of all VMs on a Hyper-V server without the need for a list file.
