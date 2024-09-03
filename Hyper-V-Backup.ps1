@@ -12,7 +12,7 @@
 
 .TAGS Hyper-V Virtual Machines Full Backup Export Permissions Zip History 7-Zip
 
-.LICENSEURI
+.LICENSEURI https://github.com/Digressive/HyperV-Backup-Utility?tab=MIT-1-ov-file
 
 .PROJECTURI https://gal.vin/utils/hyperv-backup-utility/
 
